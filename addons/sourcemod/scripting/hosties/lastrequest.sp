@@ -34,14 +34,13 @@
 
 // Compiler options
 #pragma semicolon 1
-#pragma newdecls required
 
 // Global variables
 int g_LastButtons[MAXPLAYERS+1];
 bool g_TriedToStab[MAXPLAYERS+1] = false;
 Handle m_hAllowTP;
 Handle StripZeus[MAXPLAYERS+1];
-char Picked_NSW[32][MAXPLAYERS+1];
+int Picked_NSW[MAXPLAYERS+1];
 char Picked_Pistol[32][MAXPLAYERS+1];
 
 ConVar g_hRoundTime;
@@ -1604,6 +1603,9 @@ void CleanupLastRequest(int loser, int arrayIndex)
 			StripZeus[LR_Player_Prisoner] = INVALID_HANDLE;
 		}
 		
+		SetEntPropFloat(LR_Player_Prisoner, Prop_Data, "m_flLaggedMovementValue", 1.0);
+		BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);	
+		
 		SetEntityMoveType(LR_Player_Prisoner, MOVETYPE_WALK);
 		
 		StripAllWeapons(LR_Player_Prisoner);
@@ -1624,6 +1626,9 @@ void CleanupLastRequest(int loser, int arrayIndex)
 			KillTimer(StripZeus[LR_Player_Guard]);
 			StripZeus[LR_Player_Guard] = INVALID_HANDLE;
 		}
+		
+		SetEntPropFloat(LR_Player_Guard, Prop_Data, "m_flLaggedMovementValue", 1.0);
+		BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);	
 		
 		SetEntityMoveType(LR_Player_Guard, MOVETYPE_WALK);
 		
@@ -2147,12 +2152,11 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 						return Plugin_Changed;
 					}
 				}
-				else if (Type == LR_Shot4Shot || Type == LR_Mag4Mag && \
+				else if ((Type == LR_Shot4Shot || Type == LR_Mag4Mag) && \
 					((attacker == LR_Player_Guard && victim == LR_Player_Prisoner) || \
 					(attacker == LR_Player_Prisoner && victim == LR_Player_Guard)))
 				{
 					char ActiveWeapon[64];
-					
 					Client_GetActiveWeaponName(attacker, ActiveWeapon, sizeof(ActiveWeapon));
 					ReplaceString(ActiveWeapon, sizeof(ActiveWeapon), "weapon_", "", false); 
 					if (gShadow_LR_Debug_Enabled == true)
@@ -2176,9 +2180,28 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 							damage = 0.0;
 							RightKnifeAntiCheat(attacker, idx);
 							DecideRebelsFate(attacker, idx);
-							CPrintToChatAll("\x01[\x07ENT_Hosties\x01] \x10%N \x06has been slayed switched weapon to %s, but the picked is %s", attacker, ActiveWeapon, Picked_Pistol[attacker]);
 							return Plugin_Changed;
 						}
+					}
+				}
+				else if ((attacker == LR_Player_Guard && victim != LR_Player_Prisoner) || \
+					(attacker == LR_Player_Prisoner && victim != LR_Player_Guard))
+				{
+					damage = 0.0;
+					RightKnifeAntiCheat(attacker, idx);
+					DecideRebelsFate(attacker, idx);
+					return Plugin_Changed;
+				}
+				else if (Type == LR_NoScope && \
+					((attacker == LR_Player_Guard && victim == LR_Player_Prisoner) || \
+					(attacker == LR_Player_Prisoner && victim == LR_Player_Guard)))
+				{
+					if (weapon != Picked_NSW[attacker])
+					{
+						damage = 0.0;
+						RightKnifeAntiCheat(attacker, idx);
+						DecideRebelsFate(attacker, idx);
+						return Plugin_Changed;
 					}
 				}
 				else if (Type == LR_Rebel)
@@ -3891,13 +3914,14 @@ public int MainAskHandler(Handle askmenu, MenuAction action, int client, int par
 						if (IsPlayerAlive(client) && (GetClientTeam(client) == CS_TEAM_CT))
 						{
 							// param2, 0 -> yes
-							if (param2 == 0 || (client != 0 && IsFakeClient(client)) )
+							if (param2 == 0 || (client != 0 && !IsFakeClient(client)))
 							{
 								if (!g_bInLastRequest[client])
 								{
 									int T_Count = 0;
 									for(int idx = 1; idx <= MaxClients; idx++) // TODO: Less dum way?
 									{
+										if (IsValidClient(idx) &&IsPlayerAlive(idx) && !IsFakeClient(idx))
 										if(GetClientTeam(idx) == CS_TEAM_T)
 										{
 											T_Count++;
@@ -4567,6 +4591,10 @@ void InitializeGame(int iPartnersIndex)
 				
 				EquipPlayerWeapon(LR_Player_Prisoner, NSW_Prisoner);
 				EquipPlayerWeapon(LR_Player_Guard, NSW_Guard);
+				
+				Picked_NSW[LR_Player_Prisoner] = NSW_Prisoner;
+				Picked_NSW[LR_Player_Guard] = NSW_Guard;
+				
 				SetEntPropEnt(LR_Player_Prisoner, Prop_Send, "m_hActiveWeapon", NSW_Prisoner);
 				SetEntPropEnt(LR_Player_Guard, Prop_Send, "m_hActiveWeapon", NSW_Guard);
 				SetEntData(NSW_Prisoner, g_Offset_Clip1, 99);
@@ -5557,8 +5585,6 @@ public Action Timer_Countdown(Handle timer)
 						{
 							NSW_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_awp");
 							NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_awp");
-							Picked_NSW[LR_Player_Prisoner] = "weapon_awp";
-							Picked_NSW[LR_Player_Guard] = "weapon_awp";
 						}
 						case NSW_Scout:
 						{
@@ -5566,15 +5592,11 @@ public Action Timer_Countdown(Handle timer)
 							{
 								NSW_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_scout");
 								NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_scout");
-								Picked_NSW[LR_Player_Prisoner] = "weapon_scout";
-								Picked_NSW[LR_Player_Guard] = "weapon_scout";
 							}
 							else if(g_Game == Game_CSGO)
 							{
 								NSW_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_ssg08");
 								NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_ssg08");
-								Picked_NSW[LR_Player_Prisoner] = "weapon_ssg08";
-								Picked_NSW[LR_Player_Guard] = "weapon_ssg08";
 							}
 						}
 						case NSW_SG550:
@@ -5583,36 +5605,32 @@ public Action Timer_Countdown(Handle timer)
 							{
 								NSW_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_sg550");
 								NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_sg550");
-								Picked_NSW[LR_Player_Prisoner] = "weapon_sg550";
-								Picked_NSW[LR_Player_Guard] = "weapon_sg550";
 							}
 							else if(g_Game == Game_CSGO)
 							{
 								NSW_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_scar20");
 								NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_scar20");
-								Picked_NSW[LR_Player_Prisoner] = "weapon_scar20";
-								Picked_NSW[LR_Player_Guard] = "weapon_scar20";
 							}
 						}
 						case NSW_G3SG1:
 						{
 							NSW_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_g3sg1");
 							NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_g3sg1");
-							Picked_NSW[LR_Player_Prisoner] = "weapon_g3sg1";
-							Picked_NSW[LR_Player_Guard] = "weapon_g3sg1";
 						}
 						default:
 						{
 							LogError("hit default NS");
 							NSW_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_awp");
 							NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_awp");
-							Picked_NSW[LR_Player_Prisoner] = "weapon_awp";
-							Picked_NSW[LR_Player_Guard] = "weapon_awp";
 						}
 					}
 					
 					EquipPlayerWeapon(LR_Player_Prisoner, NSW_Prisoner);
 					EquipPlayerWeapon(LR_Player_Guard, NSW_Guard);
+					
+					Picked_NSW[LR_Player_Prisoner] = NSW_Prisoner;
+					Picked_NSW[LR_Player_Guard] = NSW_Guard;
+
 					SetEntPropEnt(LR_Player_Prisoner, Prop_Send, "m_hActiveWeapon", NSW_Prisoner);
 					SetEntPropEnt(LR_Player_Guard, Prop_Send, "m_hActiveWeapon", NSW_Guard);
 					SetEntData(NSW_Prisoner, g_Offset_Clip1, 99);
