@@ -20,6 +20,7 @@
 #include <sourcemod>
 #include <cstrike>
 #include <sdkhooks>
+#include <multicolors>
 #undef REQUIRE_PLUGIN
 #include <basecomm>
 #define REQUIRE_PLUGIN
@@ -29,7 +30,6 @@ new Handle:gH_Cvar_MuteStatus = INVALID_HANDLE;
 new gShadow_MuteStatus;
 new Handle:gH_Cvar_MuteLength = INVALID_HANDLE;
 new Float:gShadow_MuteLength;
-new Handle:gH_Timer_Unmuter = INVALID_HANDLE;
 new Handle:gH_Cvar_MuteImmune = INVALID_HANDLE;
 new String:gShadow_MuteImmune[37];
 new Handle:gH_Cvar_MuteCT = INVALID_HANDLE;
@@ -74,7 +74,7 @@ MutePrisoners_AllPluginsLoaded()
 	}
 	else
 	{
-		PrintToServer("Hosties Mute System Disabled. Upgrade to SM >= 1.4.0");
+		CPrintToServer("Hosties Mute System Disabled. Upgrade to SM >= 1.4.0");
 		LogMessage("Hosties Mute System Disabled. Upgrade to SM >= 1.4.0");
 	}
 }
@@ -184,22 +184,18 @@ public MutePrisoners_PlayerSpawn(Handle:event, const String:name[], bool:dontBro
 {
 	if (gShadow_MuteStatus == 1 || gShadow_MuteStatus == 3)
 	{
-		// if the timer is anything but invalid, we should mute these new spawners
-		if (gH_Timer_Unmuter != INVALID_HANDLE)
+		new client = GetClientOfUserId(GetEventInt(event, "userid"));
+		if (GetClientTeam(client) == CS_TEAM_T)
 		{
-			new client = GetClientOfUserId(GetEventInt(event, "userid"));
-			if (GetClientTeam(client) == CS_TEAM_T)
+			if (gAdmFlags_MuteImmunity == 0)
 			{
-				if (gAdmFlags_MuteImmunity == 0)
+				CreateTimer(0.1, Timer_Mute, client, TIMER_FLAG_NO_MAPCHANGE);
+			}
+			else
+			{
+				if (!(GetUserFlagBits(client) & gAdmFlags_MuteImmunity))
 				{
 					CreateTimer(0.1, Timer_Mute, client, TIMER_FLAG_NO_MAPCHANGE);
-				}
-				else
-				{
-					if (!(GetUserFlagBits(client) & gAdmFlags_MuteImmunity))
-					{
-						CreateTimer(0.1, Timer_Mute, client, TIMER_FLAG_NO_MAPCHANGE);
-					}
 				}
 			}
 		}
@@ -212,17 +208,17 @@ public Action:Timer_Mute(Handle:timer, any:client)
 	{
 		MutePlayer(client);
 		MutedInThisRound[client] = true;
-		PrintToChat(client, CHAT_BANNER, "Now Muted");
+		CPrintToChat(client, "%s %t", ChatBanner, "Now Muted");
 		if (gShadow_LR_Debug_Enabled == true)
 		{
-			PrintToChatAll("\x01[\x07Entity-Debug\x01] \x10%N \x06has been muted", client);
+			CPrintToChatAll("\x01[\x07Entity-Debug\x01] \x10%N \x06has been muted", client);
 		}
 	}
 	else
 	{
 		if (gShadow_LR_Debug_Enabled == true)
 		{
-			PrintToChatAll("\x01[\x07Entity-Debug\x01] \x10%N \x06was muted so not getting muted this time", client);
+			CPrintToChatAll("\x01[\x07Entity-Debug\x01] \x10%N \x06was muted so not getting muted this time", client);
 		}
 	}
 	
@@ -266,12 +262,6 @@ public MutePrisoners_RoundEnd(Handle:event, const String:name[], bool:dontBroadc
 		CreateTimer(0.2, Timer_UnmuteAll, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
-	if (gH_Timer_Unmuter != INVALID_HANDLE)
-	{
-		CloseHandle(gH_Timer_Unmuter);
-		gH_Timer_Unmuter = INVALID_HANDLE;
-	}
-	
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
@@ -302,18 +292,16 @@ public MutePrisoners_RoundStart(Handle:event, const String:name[], bool:dontBroa
 			}
 		}
 		
-		// Unmute Timer
-		gH_Timer_Unmuter = CreateTimer(gShadow_MuteLength, Timer_UnmutePrisoners, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(gShadow_MuteLength, Timer_UnmutePrisoners, _, TIMER_FLAG_NO_MAPCHANGE);
 		
-		PrintToChatAll(CHAT_BANNER, "Ts Muted", RoundToNearest(gShadow_MuteLength));
+		CPrintToChatAll("%s %t", ChatBanner, "Ts Muted", RoundToNearest(gShadow_MuteLength));
 	}
 }
 
 public Action:Timer_UnmutePrisoners(Handle:timer)
 {
 	UnmuteAlive();
-	PrintToChatAll(CHAT_BANNER, "Ts Can Speak Again");
-	gH_Timer_Unmuter = INVALID_HANDLE;
+	CPrintToChatAll("%s %t", ChatBanner, "Ts Can Speak Again");
 	
 	return Plugin_Stop;
 }

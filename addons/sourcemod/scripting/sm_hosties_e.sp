@@ -24,6 +24,7 @@
 #include <sdkhooks>
 #include <emitsoundany>
 #include <hosties>
+#include <multicolors>
 
 #undef REQUIRE_PLUGIN
 #undef REQUIRE_EXTENSIONS
@@ -36,10 +37,10 @@
 #pragma 	semicolon 					1
 
 // Constants
-#define 	PLUGIN_VERSION				"2.3.5E"
+#define 	PLUGIN_VERSION				"3.1.2"
 #define 	MAX_DISPLAYNAME_SIZE		64
 #define 	MAX_DATAENTRY_SIZE			5
-#define 	SERVERTAG					"ENT_Hosties, LR"
+#define 	SERVERTAG					"ENT_Hosties, LR, LastRequest"
 
 // Note: you cannot safely turn these modules on and off yet. Use cvars to disable functionality.
 
@@ -73,6 +74,7 @@
 ******************************************************************************/
 
 // Global vars
+char ChatBanner[256];
 new bool:g_bSBAvailable = false; // SourceBans
 new GameType:g_Game = Game_Unknown;
 
@@ -138,10 +140,11 @@ new gA_FreekillsOfCT[MAXPLAYERS+1];
 // ConVars
 new Handle:gH_Cvar_Add_ServerTag = INVALID_HANDLE;
 new Handle:gH_Cvar_Display_Advert = INVALID_HANDLE;
+new Handle:gH_Cvar_ChatTag = INVALID_HANDLE;
 
 public Plugin:myinfo =
 {
-	name        = "ENT_Hosties(v2.3)",
+	name        = "ENT_Hosties(V3)",
 	author      = "databomb & Entity",
 	description = "SM_Hosties boosted version",
 	version     = "Entity",
@@ -159,6 +162,13 @@ public OnPluginStart()
 	// Create ConVars
 	gH_Cvar_Add_ServerTag = CreateConVar("sm_hosties_add_servertag", "1", "Enable or disable automatic adding of SM_Hosties in sv_tags (visible from the server browser in CS:S): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
 	gH_Cvar_Display_Advert = CreateConVar("sm_hosties_display_advert", "1", "Enable or disable the display of the Powered by SM Hosties message at the start of each round.", 0, true, 0.0, true, 1.0);
+	gH_Cvar_ChatTag = CreateConVar("sm_hosties_chat_banner", "{darkblue}[{lightblue}Hosties{darkblue}]", "Edit ChatTag for ENT_Hosties (Colors can be used).");
+	
+	HookConVarChange(gH_Cvar_ChatTag, OnCvarChange_ChatTag);
+	
+	char Temp[256];
+	GetConVarString(gH_Cvar_ChatTag, Temp, sizeof(Temp));
+	Format(ChatBanner, sizeof(ChatBanner), "%s {lime}", Temp);
 	
 	CreateConVar("sm_hosties_version", PLUGIN_VERSION, "SM_Hosties plugin version (unchangeable)", 0|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	
@@ -294,7 +304,11 @@ public OnConfigsExecuted()
 {
 	if (GetConVarInt(gH_Cvar_Add_ServerTag) == 1)
 	{
-		ServerCommand("sv_tags %s\n", SERVERTAG);
+		char tags[256];
+		ConVar g_cvSvTags = FindConVar("sv_tags");
+		g_cvSvTags.GetString(tags, sizeof(tags));
+		Format(tags, sizeof(tags), "sv_tags %s,%s", tags, SERVERTAG);
+		ServerCommand(tags);
 	}
 	
 	#if (MODULE_FREEKILL == 1)
@@ -337,7 +351,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	if (GetConVarInt(gH_Cvar_Display_Advert))
 	{
 		// Print out a messages about SM_Hosties 
-		PrintToChatAll("The server is Powered By Hosties(Entity-Edition)");
+		CPrintToChatAll("%s %s", ChatBanner, "The server is Powered By Hosties(Entity-Edition)");
 	}
 }
 
@@ -363,6 +377,11 @@ public OnAdminMenuReady(Handle:h_TopMenu)
 	LastRequest_Menus(gH_TopMenu, gM_Hosties);
 	GunSafety_Menus(gH_TopMenu, gM_Hosties);
 	Respawn_Menus(gH_TopMenu, gM_Hosties);
+}
+
+public void OnCvarChange_ChatTag(ConVar cvar, char[] oldvalue, char[] newvalue)
+{
+	Format(ChatBanner, sizeof(ChatBanner), "%s {lime}", newvalue);
 }
 
 public Action:Command_HostiesAdmin(client, args)

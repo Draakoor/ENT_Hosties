@@ -8,10 +8,6 @@
 	{
 		"en"		"Shot4Shot"
 	}
-	"Gun Toss"
-	{
-		"en"		"Gun Toss"
-	}
 	"Chicken Fight"
 	{
 		"en"		"Chicken Fight"
@@ -52,6 +48,10 @@
 	{
 		"en"		"Race"
 	}
+	"LR Grace TimeBlock"
+	{
+		"en"		"You can't start LR before the Grace Time ends."
+	}
 	"Already Dropped Deagle"
 	{
 		"en"		"You have already dropped your deagle!"
@@ -73,11 +73,13 @@
 	{
 		"#format"	"{1:N},{2:N},{3:s}"
 		"en"		"{1} was slain for attacking {2} with {3} during Knife Fight."
+		
 	}
 	"Knife Fight Gun Attack Abort"
 	{
 		"#format"	"{1:N},{2:N},{3:s}"
 		"en"		"{1} attacked {2} with {3} - Knife Fight aborted."
+		
 	}
 	"Chicken Fight Gun Attack Slay"
 	{
@@ -156,6 +158,7 @@
 	"Distance Meter"
 	{
 		"en"		"Distance meter:"
+
 	}
 	"LR Rebel Not Allowed"
 	{
@@ -206,6 +209,7 @@
 	{
 		"#format"	"{1:N}"
 		"en"		"Asking {1} for permission because you are a rebel..."
+
 	}
 	"Target Is Not Alive Or In Wrong Team"
 	{
@@ -238,11 +242,6 @@
 	{
 		"#format"	"{1:N},{2:N}"
 		"en"		"{1} chose to have Shot4Shot with {2}."
-	}
-	"LR GT Start"
-	{
-		"#format"	"{1:N},{2:N}"
-		"en"		"{1} chose to have Gun Toss with {2}."
 	}
 	"LR CF Start"
 	{
@@ -647,8 +646,7 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"Respawned {1}"
-	}
-	
+	}	
 	"Player Alive"
 	{
 		"en"		"Player is already alive."
@@ -656,8 +654,7 @@
 	"Respawn Player"
 	{
 		"en"		"Respawn Player"
-	}
-	
+	}	
 	"Respawn Data Unavailable"
 	{
 		"#format"	"{1:N}"
