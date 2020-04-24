@@ -8,6 +8,10 @@
 	{
 		"sv"		"Skott För Skott"
 	}
+	"Gun Toss"
+	{
+		"sv"		"Kasta Deagle"
+	}
 	"Chicken Fight"
 	{
 		"sv"		"Tuppfäktning"
@@ -19,14 +23,6 @@
 	"Dodgeball"
 	{
 		"sv"		"Spökboll"
-	}
-	"Gun Toss"
-	{
-		"sv"		"Kasta Deagle"
-	}
-	"LR GT Start"
-	{
-		"sv"		"{1} valde att ha Kasta Deagle med {2}."
 	}
 	"No Scope Battle"
 	{
@@ -219,6 +215,10 @@
 	"LR S4S Start"
 	{
 		"sv"		"{1} valde att ha Skott För Skott med {2}."
+	}
+	"LR GT Start"
+	{
+		"sv"		"{1} valde att ha Kasta Deagle med {2}."
 	}
 	"LR CF Start"
 	{

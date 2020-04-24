@@ -52,10 +52,6 @@
 	{
 		"en"		"Race"
 	}
-	"LR Grace TimeBlock"
-	{
-		"en"		"You can't start LR before the Grace Time ends."
-	}
 	"Already Dropped Deagle"
 	{
 		"en"		"You have already dropped your deagle!"
@@ -77,13 +73,11 @@
 	{
 		"#format"	"{1:N},{2:N},{3:s}"
 		"en"		"{1} was slain for attacking {2} with {3} during Knife Fight."
-		
 	}
 	"Knife Fight Gun Attack Abort"
 	{
 		"#format"	"{1:N},{2:N},{3:s}"
 		"en"		"{1} attacked {2} with {3} - Knife Fight aborted."
-		
 	}
 	"Chicken Fight Gun Attack Slay"
 	{
@@ -162,7 +156,6 @@
 	"Distance Meter"
 	{
 		"en"		"Distance meter:"
-
 	}
 	"LR Rebel Not Allowed"
 	{
@@ -213,7 +206,6 @@
 	{
 		"#format"	"{1:N}"
 		"en"		"Asking {1} for permission because you are a rebel..."
-
 	}
 	"Target Is Not Alive Or In Wrong Team"
 	{
@@ -577,6 +569,18 @@
 	{
 		"en"		"Tec 9"
 	}
+	"Pistol_CZ75"
+	{
+		"en"		"CZ75"
+	}
+	"Pistol_USPS"
+	{
+		"en"		"USP-S"
+	}
+	"Pistol_Revolver"
+	{
+		"en"		"Revolver"
+	}
 	"NSW_AWP"
 	{
 		"en"		"AWP"
@@ -655,7 +659,7 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"Respawned {1}"
-	}	
+	}
 	"Player Alive"
 	{
 		"en"		"Player is already alive."
@@ -663,7 +667,8 @@
 	"Respawn Player"
 	{
 		"en"		"Respawn Player"
-	}	
+	}
+	
 	"Respawn Data Unavailable"
 	{
 		"#format"	"{1:N}"
