@@ -51,6 +51,7 @@ float After_Jump_pos[MAXPLAYERS+1][3];
 float Before_Jump_pos[MAXPLAYERS+1][3];
 bool LR_Player_Jumped[MAXPLAYERS+1] = false;
 bool LR_Player_Landed[MAXPLAYERS+1] = false;
+float f_DoneDistance[MAXPLAYERS+1];
 
 bool g_bIsLRAvailable = true;
 bool g_bRoundInProgress = true;
@@ -149,7 +150,6 @@ Handle gH_Cvar_LR_Sound = null;
 Handle gH_Cvar_LR_NoScope_Weapon = null;
 Handle gH_Cvar_LR_S4S_DoubleShot = null;
 Handle gH_Cvar_LR_GunToss_MarkerMode = null;
-Handle gH_Cvar_LR_GunToss_StartMode = null;
 Handle gH_Cvar_LR_GunToss_ShowMeter = null;
 Handle gH_Cvar_LR_Race_AirPoints = null;
 Handle gH_Cvar_LR_Race_NotifyCTs = null;
@@ -222,7 +222,6 @@ float gShadow_LR_HotPotato_Speed = -1.0;
 bool gShadow_LR_S4S_DoubleShot;
 bool gShadow_LR_NonContKiller_Action;
 int gShadow_LR_GunToss_MarkerMode = -1;
-int gShadow_LR_GunToss_StartMode = -1;
 int gShadow_LR_GunToss_ShowMeter = -1;
 bool gShadow_LR_Race_AirPoints = false;
 bool gShadow_LR_Race_NotifyCTs = false;
@@ -532,8 +531,6 @@ void LastRequest_OnPluginStart()
 	gShadow_LR_NonContKiller_Action = true;
 	gH_Cvar_LR_GunToss_MarkerMode = CreateConVar("sm_hosties_lr_gt_markers", "0", "Deagle marking (requires sm_hosties_lr_gt_mode 1): 0 - markers straight up where the deagles land, 1 - markers starting where the deagle was dropped ending at the deagle landing point", 0);
 	gShadow_LR_GunToss_MarkerMode = 0;
-	gH_Cvar_LR_GunToss_StartMode = CreateConVar("sm_hosties_lr_gt_mode", "1", "How Gun Toss will be played: 0 - no double-dropping checking, deagle gets 7 ammo at start, 1 - double dropping check, deagle gets 7 ammo on drop, colouring of deagles, deagle markers", 0);
-	gShadow_LR_GunToss_StartMode = 1;
 	gH_Cvar_LR_GunToss_ShowMeter = CreateConVar("sm_hosties_lr_gt_meter", "1", "Displays a distance meter: 0 - do not display, 1 - display", 0, true, 0.0, true, 1.0);
 	gShadow_LR_GunToss_ShowMeter = 1;
 	gH_Cvar_LR_Delay_Enable_Time = CreateConVar("sm_hosties_lr_enable_delay", "0.0", "Delay in seconds before a last request can be started: 0.0 - instantly, >0.0 - (float value) delay in seconds", 0, true, 0.0);
@@ -638,7 +635,6 @@ void LastRequest_OnPluginStart()
 	HookConVarChange(gH_Cvar_LR_NonContKiller_Action, ConVarChanged_Setting);
 	HookConVarChange(gH_Cvar_LR_S4S_DoubleShot, ConVarChanged_Setting);
 	HookConVarChange(gH_Cvar_LR_GunToss_MarkerMode, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_GunToss_StartMode, ConVarChanged_Setting);
 	HookConVarChange(gH_Cvar_LR_GunToss_ShowMeter, ConVarChanged_Setting);
 	HookConVarChange(gH_Cvar_LR_Delay_Enable_Time, ConVarChanged_Setting);
 	HookConVarChange(gH_Cvar_LR_Damage, ConVarChanged_Setting); 
@@ -1777,9 +1773,9 @@ public Action LastRequest_PlayerJump(Event event, const char[] name, bool dontBr
 					GetClientAbsOrigin(LR_Player_Prisoner, Prisoner_Position);
 					Handle JumpPackPosition = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_DataPackHandle));
 					#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 8
-						SetPackPosition(JumpPackPosition, view_as<DataPackPos>(96));
+						SetPackPosition(JumpPackPosition, view_as<DataPackPos>(6));
 					#else
-						SetPackPosition(JumpPackPosition, 96);
+						SetPackPosition(JumpPackPosition, 6);
 					#endif
 					WritePackFloat(JumpPackPosition, Prisoner_Position[0]);
 					WritePackFloat(JumpPackPosition, Prisoner_Position[1]);
@@ -1792,9 +1788,9 @@ public Action LastRequest_PlayerJump(Event event, const char[] name, bool dontBr
 					GetClientAbsOrigin(LR_Player_Guard, Guard_Position);
 					Handle JumpPackPosition = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_DataPackHandle));
 					#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 8
-						SetPackPosition(JumpPackPosition, view_as<DataPackPos>(120));
+						SetPackPosition(JumpPackPosition, view_as<DataPackPos>(9));
 					#else
-						SetPackPosition(JumpPackPosition, 120);
+						SetPackPosition(JumpPackPosition, 9);
 					#endif
 					WritePackFloat(JumpPackPosition, Guard_Position[0]);
 					WritePackFloat(JumpPackPosition, Guard_Position[1]);
@@ -2259,10 +2255,31 @@ public Action OnWeaponDecideUse(int client, int weapon)
 			{
 				int GTp1done = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Global3));
 				int GTp2done = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Global4));
+				int GTp1dropped = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Global1));
+				int GTp2dropped = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Global2));
 				int GTdeagle1 = EntRefToEntIndex(GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_PrisonerData)));
 				int GTdeagle2 = EntRefToEntIndex(GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_GuardData)));
 				
-				if ((weapon == GTdeagle1 && !GTp1done) || (weapon == GTdeagle2 && !GTp2done))
+				if ((weapon == GTdeagle1 && !GTp1dropped) || (weapon == GTdeagle2 && !GTp2dropped))
+				{
+					return Plugin_Continue;
+				}
+				else if ((weapon == GTdeagle1 || weapon == GTdeagle2) && (GTp1done && GTp2done))
+				{
+					if ((f_DoneDistance[LR_Player_Guard] > f_DoneDistance[LR_Player_Prisoner]) && (client  == LR_Player_Guard) && (weapon == GTdeagle2))
+					{
+						return Plugin_Continue;
+					}
+					else if ((f_DoneDistance[LR_Player_Guard] < f_DoneDistance[LR_Player_Prisoner]) && (client  == LR_Player_Prisoner) && (weapon == GTdeagle1))
+					{
+						return Plugin_Continue;
+					}
+					else
+					{
+						return Plugin_Handled;
+					}
+				}
+				else
 				{
 					return Plugin_Handled;
 				}
@@ -2329,7 +2346,8 @@ public Action OnWeaponEquip(int client, int weapon)
 						if (StrEqual(weapon_name, "weapon_deagle"))
 						{
 							SetArrayCell(gH_DArray_LR_Partners, idx, true, view_as<int>(Block_Global3));
-						}			
+							return Plugin_Continue;
+						}		
 					}
 					else if (client == LR_Player_Guard && GTp2dropped && !GTp2done)
 					{
@@ -2338,8 +2356,34 @@ public Action OnWeaponEquip(int client, int weapon)
 						if (StrEqual(weapon_name, "weapon_deagle"))
 						{
 							SetArrayCell(gH_DArray_LR_Partners, idx, true, view_as<int>(Block_Global4));
-						}						
-					}	
+							return Plugin_Continue;
+						}
+					}
+					
+					char weapon_name[32];
+					GetEdictClassname(weapon, weapon_name, sizeof(weapon_name));
+					if (StrEqual(weapon_name, "weapon_deagle"))
+					{
+						if ((GTp1done && GTp2done) && (GTp1dropped && GTp2dropped))
+						{
+							if ((f_DoneDistance[LR_Player_Guard] > f_DoneDistance[LR_Player_Prisoner]) && (client == LR_Player_Guard))
+							{
+								return Plugin_Continue;
+							}
+							else if ((f_DoneDistance[LR_Player_Guard] < f_DoneDistance[LR_Player_Prisoner]) && (client == LR_Player_Prisoner))
+							{
+								return Plugin_Continue;
+							}
+							else
+							{
+								return Plugin_Handled;
+							}
+						}
+					}
+					else
+					{
+						return Plugin_Handled;
+					}
 				}
 				else if (type == LR_HotPotato)
 				{
@@ -2398,16 +2442,16 @@ public Action OnWeaponDrop(int client, int weapon)
 			{
 				int LR_Player_Prisoner = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Prisoner));
 				int LR_Player_Guard = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Guard));
+				int GTp1dropped = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Global1));
+				int GTp2dropped = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Global2));
 				
 				if (client == LR_Player_Prisoner || client == LR_Player_Guard)
 				{
 					int GTdeagle1 = EntRefToEntIndex(GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_PrisonerData)));
 					int GTdeagle2 = EntRefToEntIndex(GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_GuardData)));
-					int GTp1dropped = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Global1));
-					int GTp2dropped = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Global2));
 					
 					if (((client == LR_Player_Prisoner && GTp1dropped) || 
-						(client == LR_Player_Guard && GTp2dropped)) && (gShadow_LR_GunToss_StartMode == 1))
+						(client == LR_Player_Guard && GTp2dropped)))
 					{
 						if (IsValidEntity(weapon))
 						{
@@ -2432,13 +2476,12 @@ public Action OnWeaponDrop(int client, int weapon)
 							
 							if (weapon == GTdeagle1)
 							{
-
 								float GTp1droppos[3];
 								GetClientAbsOrigin(LR_Player_Prisoner, GTp1droppos);
 								#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 8
-									SetPackPosition(PositionDataPack, view_as<DataPackPos>(48));
+									SetPackPosition(PositionDataPack, view_as<DataPackPos>(12));
 								#else
-									SetPackPosition(PositionDataPack, 48);
+									SetPackPosition(PositionDataPack, 12);
 								#endif
 								WritePackFloat(PositionDataPack, GTp1droppos[0]);
 								WritePackFloat(PositionDataPack, GTp1droppos[1]);
@@ -2458,9 +2501,9 @@ public Action OnWeaponDrop(int client, int weapon)
 								float GTp2droppos[3];
 								GetClientAbsOrigin(LR_Player_Guard, GTp2droppos);
 								#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 8
-									SetPackPosition(PositionDataPack, view_as<DataPackPos>(72));
+									SetPackPosition(PositionDataPack, view_as<DataPackPos>(15));
 								#else
-									SetPackPosition(PositionDataPack, 722);
+									SetPackPosition(PositionDataPack, 15);
 								#endif
 								WritePackFloat(PositionDataPack, GTp2droppos[0]);
 								WritePackFloat(PositionDataPack, GTp2droppos[1]);
@@ -2712,7 +2755,6 @@ void LastRequest_OnConfigsExecuted()
 	gShadow_LR_NonContKiller_Action = view_as<bool>(GetConVarInt(gH_Cvar_LR_NonContKiller_Action));
 	gShadow_LR_S4S_DoubleShot = view_as<bool>(GetConVarInt(gH_Cvar_LR_S4S_DoubleShot));
 	gShadow_LR_GunToss_MarkerMode = GetConVarInt(gH_Cvar_LR_GunToss_MarkerMode);
-	gShadow_LR_GunToss_StartMode = GetConVarInt(gH_Cvar_LR_GunToss_StartMode);
 	gShadow_LR_GunToss_ShowMeter = GetConVarInt(gH_Cvar_LR_GunToss_ShowMeter);
 	gShadow_LR_Delay_Enable_Time = GetConVarFloat(gH_Cvar_LR_Delay_Enable_Time);
 	gShadow_Announce_Delay_Enable = view_as<bool>(GetConVarInt(gH_Cvar_Announce_Delay_Enable));
@@ -2898,10 +2940,6 @@ public void ConVarChanged_Setting(Handle cvar, const char[] oldValue, const char
 	else if (cvar == gH_Cvar_LR_GunToss_MarkerMode)
 	{
 		gShadow_LR_GunToss_MarkerMode = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_GunToss_StartMode)
-	{
-		gShadow_LR_GunToss_StartMode = StringToInt(newValue);
 	}
 	else if (cvar == gH_Cvar_LR_GunToss_ShowMeter)
 	{
@@ -4102,9 +4140,6 @@ void InitializeGame(int iPartnersIndex)
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_deagle");
 					Picked_Pistol[LR_Player_Prisoner] = "weapon_deagle";
 					Picked_Pistol[LR_Player_Guard] = "weapon_deagle";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_P228:
 				{
@@ -4121,9 +4156,6 @@ void InitializeGame(int iPartnersIndex)
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_p250");
 						Picked_Pistol[LR_Player_Prisoner] = "weapon_p250";
 						Picked_Pistol[LR_Player_Guard] = "weapon_p250";
-						
-						Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-						Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 					}
 				}
 				case Pistol_Glock:
@@ -4132,9 +4164,6 @@ void InitializeGame(int iPartnersIndex)
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_glock");
 					Picked_Pistol[LR_Player_Prisoner] = "weapon_glock";
 					Picked_Pistol[LR_Player_Guard] = "weapon_glock";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_FiveSeven:
 				{
@@ -4142,9 +4171,6 @@ void InitializeGame(int iPartnersIndex)
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_fiveseven");
 					Picked_Pistol[LR_Player_Prisoner] = "weapon_fiveseven";
 					Picked_Pistol[LR_Player_Guard] = "weapon_fiveseven";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_Dualies:
 				{
@@ -4152,9 +4178,6 @@ void InitializeGame(int iPartnersIndex)
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_elite");
 					Picked_Pistol[LR_Player_Prisoner] = "weapon_elite";
 					Picked_Pistol[LR_Player_Guard] = "weapon_elite";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_USP:
 				{
@@ -4171,9 +4194,6 @@ void InitializeGame(int iPartnersIndex)
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_usp_silencer");
 						Picked_Pistol[LR_Player_Prisoner] = "weapon_usp_silencer";
 						Picked_Pistol[LR_Player_Guard] = "weapon_usp_silencer";
-						
-						Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-						Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 					}
 				}
 				case Pistol_Tec9:
@@ -4182,9 +4202,6 @@ void InitializeGame(int iPartnersIndex)
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_tec9");
 					Picked_Pistol[LR_Player_Prisoner] = "weapon_tec9";
 					Picked_Pistol[LR_Player_Guard] = "weapon_tec9";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				default:
 				{
@@ -4193,11 +4210,12 @@ void InitializeGame(int iPartnersIndex)
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_deagle");
 					Picked_Pistol[LR_Player_Prisoner] = "weapon_deagle";
 					Picked_Pistol[LR_Player_Guard] = "weapon_deagle";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 			}
+			
+			Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
+			Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
+			
 			GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
 			GivePlayerItem(LR_Player_Guard, "weapon_knife");
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, Pistol_Prisoner, view_as<int>(Block_PrisonerData));
@@ -4299,9 +4317,6 @@ void InitializeGame(int iPartnersIndex)
 			StripAllWeapons(LR_Player_Prisoner);
 			StripAllWeapons(LR_Player_Guard);
 
-			// give knives and deagles
-			GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
-			GivePlayerItem(LR_Player_Guard, "weapon_knife");
 			int GTdeagle1 = GivePlayerItem(LR_Player_Prisoner, "weapon_deagle");
 			int GTdeagle2 = GivePlayerItem(LR_Player_Guard, "weapon_deagle");
 			int Prisoner_GunEntRef = EntIndexToEntRef(GTdeagle1);
@@ -4309,35 +4324,35 @@ void InitializeGame(int iPartnersIndex)
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, Prisoner_GunEntRef, view_as<int>(Block_PrisonerData));
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, Guard_GunEntRef, view_as<int>(Block_GuardData));
 
-			// set ammo (Clip2) 0 -- we don't need any extra ammo...
+			SetEntityRenderMode(GTdeagle1, RENDER_TRANSCOLOR);
+			SetEntityRenderColor(GTdeagle1, 255, 0, 0);
+			SetEntityRenderMode(GTdeagle2, RENDER_TRANSCOLOR);
+			SetEntityRenderColor(GTdeagle2, 0, 0, 255);
+
+			EquipPlayerWeapon(LR_Player_Prisoner, GTdeagle1);
+			EquipPlayerWeapon(LR_Player_Guard, GTdeagle2);
+			
+			SetEntPropEnt(LR_Player_Prisoner, Prop_Send, "m_hActiveWeapon", GTdeagle1);
+			SetEntPropEnt(LR_Player_Guard, Prop_Send, "m_hActiveWeapon", GTdeagle2);
+
+			// set secondary ammo to 0
 			if(g_Game == Game_CSGO)
 			{
-				SetEntProp(GTdeagle1, Prop_Send, "m_iPrimaryReserveAmmoCount", 0);
-				SetEntProp(GTdeagle2, Prop_Send, "m_iPrimaryReserveAmmoCount", 0);
+				SetZeroAmmo(LR_Player_Prisoner, GTdeagle1);
+				SetZeroAmmo(LR_Player_Guard, GTdeagle2);
 			}
 			else
 			{
-				SetEntData(LR_Player_Prisoner, g_Offset_Ammo+(1*4), 0);
-				SetEntData(LR_Player_Guard, g_Offset_Ammo+(1*4), 0);
-			}
-
-			if (gShadow_LR_GunToss_StartMode > 0)
-			{
-				// set ammo (Clip1)
-				SetEntData(GTdeagle1, g_Offset_Clip1, 0);
-				SetEntData(GTdeagle2, g_Offset_Clip1, 0);
-				
-				SetEntityRenderMode(GTdeagle1, RENDER_TRANSCOLOR);
-				SetEntityRenderColor(GTdeagle1, 255, 0, 0);
-				SetEntityRenderMode(GTdeagle2, RENDER_TRANSCOLOR);
-				SetEntityRenderColor(GTdeagle2, 0, 0, 255);
+				int iAmmoType = GetEntProp(GTdeagle1, Prop_Send, "m_iPrimaryAmmoType");
+				SetEntData(LR_Player_Guard, g_Offset_Ammo+(iAmmoType*4), 0, _, true);
+				SetEntData(LR_Player_Prisoner, g_Offset_Ammo+(iAmmoType*4), 0, _, true);
 			}
 
 			SetEntData(LR_Player_Prisoner, g_Offset_Health, 100);
 			SetEntData(LR_Player_Guard, g_Offset_Health, 100);
 			
 			// announce LR
-			CPrintToChatAll("%s %s", ChatBanner, "LR GT Start", LR_Player_Prisoner, LR_Player_Guard);
+			CPrintToChatAll("%s %t", ChatBanner, "LR GT Start", LR_Player_Prisoner, LR_Player_Guard);
 		}
 		case LR_ChickenFight:
 		{
@@ -5700,13 +5715,12 @@ public Action Timer_Race(Handle timer)
 				GetClientAbsOrigin(LR_Player_Prisoner, LR_Prisoner_Position);
 				GetClientAbsOrigin(LR_Player_Guard, LR_Guard_Position);
 				// check how close they are to the end point
-				float f_PrisonerDistance, f_GuardDistance;
-				f_PrisonerDistance = GetVectorDistance(LR_Prisoner_Position, f_EndLocation, false);
-				f_GuardDistance = GetVectorDistance(LR_Guard_Position, f_EndLocation, false);
+				f_DoneDistance[LR_Player_Prisoner] = GetVectorDistance(LR_Prisoner_Position, f_EndLocation, false);
+				f_DoneDistance[LR_Player_Guard] = GetVectorDistance(LR_Guard_Position, f_EndLocation, false);
 				
-				if (f_PrisonerDistance < 75.0 || f_GuardDistance < 75.0)
+				if (f_DoneDistance[LR_Player_Prisoner] < 75.0 || f_DoneDistance[LR_Player_Guard] < 75.0)
 				{
-					if (f_PrisonerDistance < f_GuardDistance)
+					if (f_DoneDistance[LR_Player_Prisoner] < f_DoneDistance[LR_Player_Guard])
 					{
 						KillAndReward(LR_Player_Guard, LR_Player_Prisoner);
 						CPrintToChatAll("%s %t", ChatBanner, "Race Won", LR_Player_Prisoner);
@@ -6057,6 +6071,7 @@ public Action Timer_GunToss(Handle timer)
 							#else
 								SetPackPosition(PositionDataPack, 0);
 							#endif
+							WritePackFloat(PositionDataPack, GTdeagle1lastpos[0]);
 							WritePackFloat(PositionDataPack, GTdeagle1lastpos[1]);
 							WritePackFloat(PositionDataPack, GTdeagle1lastpos[2]);
 						}
@@ -6101,9 +6116,9 @@ public Action Timer_GunToss(Handle timer)
 							GTdeagle2lastpos[2] = GTdeagle2pos[2];
 	
 							#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 8
-								SetPackPosition(PositionDataPack, view_as<DataPackPos>(24));
+								SetPackPosition(PositionDataPack, view_as<DataPackPos>(3));
 							#else
-								SetPackPosition(PositionDataPack, 24);
+								SetPackPosition(PositionDataPack, 3);
 							#endif
 							WritePackFloat(PositionDataPack, GTdeagle2lastpos[0]);
 							WritePackFloat(PositionDataPack, GTdeagle2lastpos[1]);
@@ -6133,53 +6148,52 @@ public Action Timer_GunToss(Handle timer)
 					}
 				}
 				
+				int LR_Player_Prisoner = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Prisoner));
+				int LR_Player_Guard = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Guard));
+				
 				// broadcast distance
 				if (gShadow_LR_GunToss_ShowMeter)
 				{
-					float f_GuardDistance;
 					if (GTp2dropped)
 					{
-						f_GuardDistance = GetVectorDistance(GTp2jumppos, GTdeagle2lastpos);
+						f_DoneDistance[LR_Player_Guard] = GetVectorDistance(GTp2jumppos, GTdeagle2lastpos);
 					}
 					else
 					{
-						f_GuardDistance = 0.0;
+						f_DoneDistance[LR_Player_Guard] = 0.0;
 					}
 					
-					float f_PrisonerDistance;
 					if (GTp1dropped)
 					{
-						f_PrisonerDistance = GetVectorDistance(GTp1jumppos, GTdeagle1lastpos);
+						f_DoneDistance[LR_Player_Prisoner] = GetVectorDistance(GTp1jumppos, GTdeagle1lastpos);
 					}
 					else
 					{
-						f_PrisonerDistance = 0.0;
+						f_DoneDistance[LR_Player_Prisoner] = 0.0;
 					}
 
-					int LR_Player_Prisoner = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Prisoner));
-					int LR_Player_Guard = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Guard));
 					if (!gShadow_SendGlobalMsgs)
 					{
 						if (g_Game == Game_CSS)
 						{
-							PrintHintText(LR_Player_Prisoner, "%t\n \n%N: %3.1f \n%N: %3.1f", "Distance Meter", LR_Player_Prisoner, f_PrisonerDistance, LR_Player_Guard, f_GuardDistance);
-							PrintHintText(LR_Player_Guard, "%t\n \n%N: %3.1f \n%N: %3.1f", "Distance Meter", LR_Player_Prisoner, f_PrisonerDistance, LR_Player_Guard, f_GuardDistance);
+							PrintHintText(LR_Player_Prisoner, "%t\n \n%N: %3.1f \n%N: %3.1f", "Distance Meter", LR_Player_Prisoner, f_DoneDistance[LR_Player_Prisoner], LR_Player_Guard, f_DoneDistance[LR_Player_Guard]);
+							PrintHintText(LR_Player_Guard, "%t\n \n%N: %3.1f \n%N: %3.1f", "Distance Meter", LR_Player_Prisoner, f_DoneDistance[LR_Player_Prisoner], LR_Player_Guard, f_DoneDistance[LR_Player_Guard]);
 						}
 						else if (g_Game == Game_CSGO)
 						{
-							PrintHintText(LR_Player_Prisoner, "%t\n%N: %3.1f \n%N: %3.1f", "Distance Meter", LR_Player_Prisoner, f_PrisonerDistance, LR_Player_Guard, f_GuardDistance);
-							PrintHintText(LR_Player_Guard, "%t\n%N: %3.1f \n%N: %3.1f", "Distance Meter", LR_Player_Prisoner, f_PrisonerDistance, LR_Player_Guard, f_GuardDistance);
+							PrintHintText(LR_Player_Prisoner, "%t\n%N: %3.1f \n%N: %3.1f", "Distance Meter", LR_Player_Prisoner, f_DoneDistance[LR_Player_Prisoner], LR_Player_Guard, f_DoneDistance[LR_Player_Guard]);
+							PrintHintText(LR_Player_Guard, "%t\n%N: %3.1f \n%N: %3.1f", "Distance Meter", LR_Player_Prisoner, f_DoneDistance[LR_Player_Prisoner], LR_Player_Guard, f_DoneDistance[LR_Player_Guard]);
 						}
 					}
 					else
 					{
 						if (g_Game == Game_CSS)
 						{
-							Format(sHintTextGlobal, sizeof(sHintTextGlobal), "%s \n \n %N: %3.1f \n %N: %3.1f", sHintTextGlobal, LR_Player_Prisoner, f_PrisonerDistance, LR_Player_Guard, f_GuardDistance);
+							Format(sHintTextGlobal, sizeof(sHintTextGlobal), "%s \n \n %N: %3.1f \n %N: %3.1f", sHintTextGlobal, LR_Player_Prisoner, f_DoneDistance[LR_Player_Prisoner], LR_Player_Guard, f_DoneDistance[LR_Player_Guard]);
 						}
 						else if (g_Game == Game_CSGO)
 						{
-							Format(sHintTextGlobal, sizeof(sHintTextGlobal), "%s \n %N: %3.1f \n %N: %3.1f", sHintTextGlobal, LR_Player_Prisoner, f_PrisonerDistance, LR_Player_Guard, f_GuardDistance);
+							Format(sHintTextGlobal, sizeof(sHintTextGlobal), "%s \n %N: %3.1f \n %N: %3.1f", sHintTextGlobal, LR_Player_Prisoner, f_DoneDistance[LR_Player_Prisoner], LR_Player_Guard, f_DoneDistance[LR_Player_Guard]);
 						}
 					}
 				}

@@ -1,3 +1,14 @@
+---2020.04.25
+Added GunToss back (Fixed and works perfectly)
+Changed whole project to new syntax
+Fixed GunToss pickup for smaller distance
+Fixed GunToss random pickups
+Fixed GunToss weapon color disappears
+Fixed GunToss DataPack errors
+Fixed GunToss Ammo
+Fixed Translation
+Removed Cvar - sm_hosties_lr_gt_mode (needed to the perfect fix)
+
 ---2020.04.24
 Added new Cvar (sm_hosties_chat_banner)
 Added ColorSupport from multicolors

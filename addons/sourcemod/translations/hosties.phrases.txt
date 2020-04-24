@@ -63,7 +63,7 @@
 	}
 	"Powered By Hosties"
 	{
-		"en"		"This server is powered by SM_Hosties v2, enjoy!"
+		"en"		"This server is being powered by ENT_Hosties V3. Enjoy!"
 	}
 	"Please Follow Rules"
 	{
@@ -660,6 +660,7 @@
 		"#format"	"{1:s}"
 		"en"		"Respawned {1}"
 	}
+	
 	"Player Alive"
 	{
 		"en"		"Player is already alive."

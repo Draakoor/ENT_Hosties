@@ -62,7 +62,7 @@
 	}
 	"Powered By Hosties"
 	{
-		"sv"		"Denna servern kränger falukorv tack vare SM_Hosties v2, njut!"
+		"sv"		"This server is being powered by ENT_Hosties V3. Enjoy!"
 	}
 	"Please Follow Rules"
 	{

@@ -62,7 +62,7 @@
 	}
 	"Powered By Hosties"
 	{
-		"fr"		"Bienvenue sur le Serveur BA_JAIL des Monsieurs"
+		"fr"		"This server is being powered by ENT_Hosties V3. Enjoy!"
 	}
 	"Please Follow Rules"
 	{

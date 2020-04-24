@@ -62,7 +62,7 @@
 	}
 	"Powered By Hosties"
 	{
-		"pt"		"Este servidor utiliza SM_Hosties v2, divirta-se!"
+		"pt"		"This server is being powered by ENT_Hosties V3. Enjoy!"
 	}
 	"Please Follow Rules"
 	{

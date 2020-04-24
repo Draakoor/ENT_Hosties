@@ -62,7 +62,7 @@
 	}
 	"Powered By Hosties"
 	{
-		"chi"		"本服务器由 SM_Hosties v2 插件支持, 祝大家玩的开心!"
+		"chi"		"This server is being powered by ENT_Hosties V3. Enjoy!"
 	}
 	"Please Follow Rules"
 	{

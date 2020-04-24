@@ -362,7 +362,7 @@ public Action Event_RoundStart(Event event, const char[] name , bool dontBroadca
 	if (GetConVarInt(gH_Cvar_Display_Advert))
 	{
 		// Print out a messages about SM_Hosties 
-		CPrintToChatAll("%s %s", ChatBanner, "The server is Powered By Hosties(Entity-Edition)");
+		CPrintToChatAll("%s %t", ChatBanner, "Powered By Hosties");
 	}
 }
 

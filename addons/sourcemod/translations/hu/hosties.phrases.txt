@@ -70,7 +70,7 @@
 	}
 	"Powered By Hosties"
 	{
-		"hu"		"Ezt a szervert az SM_Hosties v2 üzemelteti."
+		"hu"		"Ezt a szervert az ENT_Hosties V3 támogatja. Jó játékot!"
 	}
 	"Please Follow Rules"
 	{

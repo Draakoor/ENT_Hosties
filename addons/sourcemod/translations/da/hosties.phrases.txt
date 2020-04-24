@@ -62,7 +62,7 @@
 	}
 	"Powered By Hosties"
 	{
-		"da"		"Denne server er drevet af SM_Hosties v2, god fornøjelse!"
+		"da"		"This server is being powered by ENT_Hosties V3. Enjoy!"
 	}
 	"Please Follow Rules"
 	{
