@@ -43,8 +43,7 @@ Handle StripZeus[MAXPLAYERS+1];
 int Picked_NSW[MAXPLAYERS+1];
 char Picked_Pistol[32][MAXPLAYERS+1];
 
-ConVar g_hRoundTime;
-int g_RoundTime;
+bool GraceTimeOff = false;
 Handle RoundTimeTicker;
 Handle TickerState = INVALID_HANDLE;
 float After_Jump_pos[MAXPLAYERS+1][3];
@@ -301,8 +300,6 @@ char g_sLastRequestPhrase[LastRequest][MAX_DISPLAYNAME_SIZE];
 
 void LastRequest_OnPluginStart()
 {
-	g_hRoundTime = FindConVar("mp_roundtime");
-
 	// Populate translation entries
 	// no longer pulling LANG_SERVER
 	g_sLastRequestPhrase[LR_KnifeFight] = "Knife Fight";
@@ -960,28 +957,19 @@ int Local_IsClientInLR(int client)
 	return 0;
 }
 
-public Action Timer_RoundTimeLeft(Handle timer, int RoundTime)
+public Action Timer_RoundTimeLeft(Handle timer)
 {
-	if (g_RoundTime != 0)
-	{
-		g_RoundTime = g_RoundTime - 1;
-	}
-	return Plugin_Continue;
+	GraceTimeOff = true;
+	return Plugin_Stop;
 }
 
 public Action LastRequest_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	g_hRoundTime = FindConVar("mp_roundtime");
-	g_RoundTime = GetConVarInt(g_hRoundTime) * 60;
-	if (TickerState == INVALID_HANDLE)
-	{
-		RoundTimeTicker = CreateTimer(1.0, Timer_RoundTimeLeft, g_RoundTime, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	}
-	else
-	{
-		KillTimer(RoundTimeTicker);
-		RoundTimeTicker = CreateTimer(1.0, Timer_RoundTimeLeft, g_RoundTime, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	}
+	float GraceTime; GraceTimeOff = false;
+	ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
+	GraceTime = GetConVarFloat(g_cvGraceTime);
+
+	CreateTimer(GraceTime, Timer_RoundTimeLeft, _, TIMER_FLAG_NO_MAPCHANGE);
 
 	g_bAnnouncedThisRound = false;
 	
@@ -2112,7 +2100,6 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 							}
 						}
 					}
-
 					return Plugin_Handled;
 				}
 				else if (Type == LR_RockPaperScissors || Type == LR_Race || Type == LR_JumpContest && \
@@ -2180,8 +2167,8 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 						}
 					}
 				}
-				else if ((attacker == LR_Player_Guard && victim != LR_Player_Prisoner) || \
-					(attacker == LR_Player_Prisoner && victim != LR_Player_Guard))
+				else if (((attacker == LR_Player_Guard && victim != LR_Player_Prisoner) || \
+					(attacker == LR_Player_Prisoner && victim != LR_Player_Guard)) && Type != LR_Rebel)
 				{
 					damage = 0.0;
 					RightKnifeAntiCheat(attacker, idx);
@@ -3185,13 +3172,7 @@ public Action Command_LastRequest(int client, int args)
 								{
 									if (NumCTsAvailable > 0)
 									{
-										int GraceTime, RoundTime;
-										ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
-										ConVar g_cvRoundTime = FindConVar("mp_roundtime");
-										RoundTime = GetConVarInt(g_cvRoundTime);
-										GraceTime = GetConVarInt(g_cvGraceTime);
-										
-										if (g_RoundTime < ((RoundTime*60) - GraceTime - 1))
+										if (GraceTimeOff)
 										{
 											DisplayLastRequestMenu(client, Ts, CTs);
 										}
@@ -4500,12 +4481,6 @@ void InitializeGame(int iPartnersIndex)
 
 			SetEntityGravity(LR_Player_Prisoner, gShadow_LR_Dodgeball_Gravity);
 			SetEntityGravity(LR_Player_Guard, gShadow_LR_Dodgeball_Gravity);
-
-			if (!gShadow_NoBlock)
-			{
-				UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
-				UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
-			}
 			
 			// timer making sure DB contestants stay @ 1 HP (if enabled by cvar)
 			if ((g_DodgeballTimer == INVALID_HANDLE) && gShadow_LR_Dodgeball_CheatCheck)
@@ -5162,7 +5137,9 @@ void InitializeGame(int iPartnersIndex)
 		{
 			if (IsClientInGame(LR_Player_Prisoner) && IsPlayerAlive(LR_Player_Prisoner))
 			{
-				if (selection != LR_Rebel)
+				if (selection != LR_Rebel && (selection == LR_ChickenFight || selection == LR_Dodgeball || selection == LR_GunToss ||
+					selection == LR_HotPotato || selection == LR_JumpContest || selection == LR_KnifeFight || selection == LR_Mag4Mag ||
+					selection == LR_NoScope || selection == LR_Race || selection == LR_Shot4Shot))
 				{
 					SetEntityHealth(LR_Player_Prisoner, 100);
 					RemoveDangerZone(LR_Player_Prisoner);
@@ -5178,7 +5155,9 @@ void InitializeGame(int iPartnersIndex)
 			
 			if (IsClientInGame(LR_Player_Guard) && IsPlayerAlive(LR_Player_Guard))
 			{
-				if (selection != LR_Rebel)
+				if (selection != LR_Rebel && (selection == LR_ChickenFight || selection == LR_Dodgeball || selection == LR_GunToss ||
+					selection == LR_HotPotato || selection == LR_JumpContest || selection == LR_KnifeFight || selection == LR_Mag4Mag ||
+					selection == LR_NoScope || selection == LR_Race || selection == LR_Shot4Shot))
 				{
 					SetEntityHealth(LR_Player_Guard, 100);					
 					RemoveDangerZone(LR_Player_Guard);

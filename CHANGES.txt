@@ -1,3 +1,12 @@
+---2020.04.26
+Fixed NoScope duplication
+Fixed GraceTime support
+Fixed 3rd party LR support
+Fixed GunToss weapon invisibility
+Fixed Rebel kill bug
+Fixed Dodgeball ghost bug
+Fixed 3rd party HP reset
+
 ---2020.04.25
 Added GunToss back (Fixed and works perfectly)
 Changed whole project to new syntax
