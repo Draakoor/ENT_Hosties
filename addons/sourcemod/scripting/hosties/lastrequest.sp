@@ -43,9 +43,8 @@ Handle StripZeus[MAXPLAYERS+1];
 int Picked_NSW[MAXPLAYERS+1];
 char Picked_Pistol[32][MAXPLAYERS+1];
 
+Handle GraceKiller = INVALID_HANDLE;
 bool GraceTimeOff = false;
-Handle RoundTimeTicker;
-Handle TickerState = INVALID_HANDLE;
 float After_Jump_pos[MAXPLAYERS+1][3];
 float Before_Jump_pos[MAXPLAYERS+1][3];
 bool LR_Player_Jumped[MAXPLAYERS+1] = false;
@@ -960,6 +959,13 @@ int Local_IsClientInLR(int client)
 public Action Timer_RoundTimeLeft(Handle timer)
 {
 	GraceTimeOff = true;
+	
+	if (GraceKiller != INVALID_HANDLE)
+	{
+		KillTimer(GraceKiller);
+		GraceKiller = INVALID_HANDLE;
+	}
+	
 	return Plugin_Stop;
 }
 
@@ -969,7 +975,13 @@ public Action LastRequest_RoundStart(Event event, const char[] name, bool dontBr
 	ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
 	GraceTime = GetConVarFloat(g_cvGraceTime);
 
-	CreateTimer(GraceTime, Timer_RoundTimeLeft, _, TIMER_FLAG_NO_MAPCHANGE);
+	if (GraceKiller != INVALID_HANDLE)
+	{
+		KillTimer(GraceKiller);
+		GraceKiller = INVALID_HANDLE;
+	}
+
+	GraceKiller = CreateTimer(GraceTime, Timer_RoundTimeLeft, _, TIMER_FLAG_NO_MAPCHANGE);
 
 	g_bAnnouncedThisRound = false;
 	
@@ -1047,10 +1059,12 @@ void StopActiveLRs(int client)
 
 public Action LastRequest_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
-	if (TickerState != INVALID_HANDLE)
+	if (GraceKiller != INVALID_HANDLE)
 	{
-		KillTimer(RoundTimeTicker);
+		KillTimer(GraceKiller);
+		GraceKiller = INVALID_HANDLE;
 	}
+	
 
 	// Block LRs and reset
 	g_bIsLRAvailable = false;
