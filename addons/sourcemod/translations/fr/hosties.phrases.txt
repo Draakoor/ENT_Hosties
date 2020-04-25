@@ -558,6 +558,10 @@
 	}
 	"Race Could Start Soon"
 	{
-		"fr"		"{1} a choisis de faire une Course. Veuillez placer le Point de départ et d'arrivé !"
+		"fr"		"{1} a choisis de faire une Course. Veuillez placer le Point de départ et d'arrivé!"
+	}
+	"Blocked Warmup"
+	{
+		"fr"		"Vous ne pouvez pas lancer une dernière volonté pendant l'échauffement."
 	}
 }
