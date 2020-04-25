@@ -22,6 +22,7 @@
 #include <cstrike>
 #include <hosties>
 #include <multicolors>
+#include <smlib>
 
 
 Handle gH_Cvar_StartWeaponsOn = INVALID_HANDLE;
@@ -75,7 +76,6 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 	if (gShadow_StartWeaponsOn)
 	{
 		StripAllWeapons(client);
-		
 		int team = GetClientTeam(client);
 		switch (team)
 		{
@@ -83,7 +83,10 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 			{
 				for (int Tidx = 0; Tidx < g_iSizeOfTList; Tidx++)
 				{
-					GivePlayerItem(client, gs_T_WeaponList[Tidx]);
+					if (!Client_HasWeapon(client, gs_T_WeaponList[Tidx]))
+					{
+						GivePlayerItem(client, gs_T_WeaponList[Tidx]);
+					}
 				}
 			}
 			case CS_TEAM_CT:
@@ -101,7 +104,10 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 						Format(sWeapon, sizeof(sWeapon), gs_CT_WeaponList[CTidx]);
 					}
 
-					GivePlayerItem(client, sWeapon);
+					if (!Client_HasWeapon(client, sWeapon))
+					{
+						GivePlayerItem(client, sWeapon);
+					}
 				}
 			}
 		}
