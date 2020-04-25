@@ -3173,7 +3173,7 @@ public Action Command_LastRequest(int client, int args)
 					}
 					else
 					{
-						if (GameRules_GetProp("m_bWarmupPeriod") == 1)
+						if (GameRules_GetProp("m_bWarmupPeriod") == 0)
 						{
 							// check the number of terrorists still alive
 							int Ts, CTs, NumCTsAvailable;
