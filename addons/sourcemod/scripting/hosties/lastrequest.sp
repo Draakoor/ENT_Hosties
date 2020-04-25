@@ -3173,44 +3173,51 @@ public Action Command_LastRequest(int client, int args)
 					}
 					else
 					{
-						// check the number of terrorists still alive
-						int Ts, CTs, NumCTsAvailable;
-						UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);
-
-						if (Ts <= gShadow_MaxPrisonersToLR || gShadow_MaxPrisonersToLR == 0)
+						if (GameRules_GetProp("m_bWarmupPeriod") == 1)
 						{
-							if (CTs > 0)
+							// check the number of terrorists still alive
+							int Ts, CTs, NumCTsAvailable;
+							UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);
+
+							if (Ts <= gShadow_MaxPrisonersToLR || gShadow_MaxPrisonersToLR == 0)
 							{
-								if (NumCTsAvailable > 0)
+								if (CTs > 0)
 								{
-									int GraceTime, RoundTime;
-									ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
-									ConVar g_cvRoundTime = FindConVar("mp_roundtime");
-									RoundTime = GetConVarInt(g_cvRoundTime);
-									GraceTime = GetConVarInt(g_cvGraceTime);
-									
-									if (g_RoundTime < ((RoundTime*60) - GraceTime - 1))
+									if (NumCTsAvailable > 0)
 									{
-										DisplayLastRequestMenu(client, Ts, CTs);
+										int GraceTime, RoundTime;
+										ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
+										ConVar g_cvRoundTime = FindConVar("mp_roundtime");
+										RoundTime = GetConVarInt(g_cvRoundTime);
+										GraceTime = GetConVarInt(g_cvGraceTime);
+										
+										if (g_RoundTime < ((RoundTime*60) - GraceTime - 1))
+										{
+											DisplayLastRequestMenu(client, Ts, CTs);
+										}
+										else
+										{
+											CPrintToChat(client, "%s %t", ChatBanner, "LR Grace TimeBlock");
+										}
 									}
 									else
 									{
-										CPrintToChat(client, "%s %t", ChatBanner, "LR Grace TimeBlock");
+										CPrintToChat(client, "%s %t", ChatBanner, "LR No CTs Available");
 									}
 								}
 								else
 								{
-									CPrintToChat(client, "%s %t", ChatBanner, "LR No CTs Available");
+									CPrintToChat(client, "%s %t", ChatBanner, "No CTs Alive");
 								}
 							}
 							else
 							{
-								CPrintToChat(client, "%s %t", ChatBanner, "No CTs Alive");
+								CPrintToChat(client, "%s %t", ChatBanner, "Too Many Ts");
 							}
 						}
 						else
 						{
-							CPrintToChat(client, "%s %t", ChatBanner, "Too Many Ts");
+							CPrintToChat(client, "%s %t", ChatBanner, "Blocked Warmup");
 						}
 					}
 				}

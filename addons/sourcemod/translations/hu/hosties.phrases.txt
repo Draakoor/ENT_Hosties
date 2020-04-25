@@ -602,4 +602,8 @@
 	{
 		"hu"		"{1} játékosnak nincs újraéledési adata még és vissza lett küldve a cellába."
 	}
+	"Blocked Warmup"
+	{
+		"hu"		"Nem indíthatsz LR-t a bemelegítés alatt."
+	}
 }

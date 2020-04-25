@@ -659,8 +659,7 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"Respawned {1}"
-	}
-	
+	}	
 	"Player Alive"
 	{
 		"en"		"Player is already alive."
@@ -668,11 +667,14 @@
 	"Respawn Player"
 	{
 		"en"		"Respawn Player"
-	}
-	
+	}	
 	"Respawn Data Unavailable"
 	{
 		"#format"	"{1:N}"
 		"en"		"Player {1} did not have respawn data yet and was sent back to cells."
+	}
+	"Blocked Warmup"
+	{
+		"en"		"You can't start LR during Warmup."
 	}
 }
