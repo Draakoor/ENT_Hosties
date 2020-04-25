@@ -959,12 +959,7 @@ int Local_IsClientInLR(int client)
 public Action Timer_RoundTimeLeft(Handle timer)
 {
 	GraceTimeOff = true;
-	
-	if (GraceKiller != INVALID_HANDLE)
-	{
-		KillTimer(GraceKiller);
-		GraceKiller = INVALID_HANDLE;
-	}
+	GraceKiller = INVALID_HANDLE;
 	
 	return Plugin_Stop;
 }
