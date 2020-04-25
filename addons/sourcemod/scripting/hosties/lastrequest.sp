@@ -1054,7 +1054,7 @@ void StopActiveLRs(int client)
 		RemoveFromArray(gH_DArray_LR_Partners, iArraySize-1);
 		iArraySize--;
 	}
-	CShowActivity(client, "%t", "LR Aborted");
+	CShowActivity(client, "%s %t", ChatBanner, "LR Aborted");
 }
 
 public Action LastRequest_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -4336,6 +4336,9 @@ void InitializeGame(int iPartnersIndex)
 			SetEntityRenderMode(GTdeagle2, RENDER_TRANSCOLOR);
 			SetEntityRenderColor(GTdeagle2, 0, 0, 255);
 			
+			EquipPlayerWeapon(LR_Player_Prisoner, GTdeagle1);
+			EquipPlayerWeapon(LR_Player_Guard, GTdeagle2);
+			
 			SetEntPropEnt(LR_Player_Prisoner, Prop_Send, "m_hActiveWeapon", GTdeagle1);
 			SetEntPropEnt(LR_Player_Guard, Prop_Send, "m_hActiveWeapon", GTdeagle2);
 
@@ -4390,6 +4393,7 @@ void InitializeGame(int iPartnersIndex)
 			int HPdeagle = GivePlayerItem(potatoClient, "weapon_deagle");
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, HPdeagle, view_as<int>(Block_Global4));
 			DispatchSpawn(HPdeagle);
+			EquipPlayerWeapon(potatoClient, HPdeagle);
 			SetEntPropEnt(potatoClient, Prop_Send, "m_hActiveWeapon", HPdeagle);
 
 			// set ammo (Clip2) 0
