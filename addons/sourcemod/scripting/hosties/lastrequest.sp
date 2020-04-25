@@ -4611,9 +4611,6 @@ void InitializeGame(int iPartnersIndex)
 					}
 				}
 				
-				EquipPlayerWeapon(LR_Player_Prisoner, NSW_Prisoner);
-				EquipPlayerWeapon(LR_Player_Guard, NSW_Guard);
-				
 				Picked_NSW[LR_Player_Prisoner] = NSW_Prisoner;
 				Picked_NSW[LR_Player_Guard] = NSW_Guard;
 				
@@ -5646,10 +5643,7 @@ public Action Timer_Countdown(Handle timer)
 							NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_awp");
 						}
 					}
-					
-					EquipPlayerWeapon(LR_Player_Prisoner, NSW_Prisoner);
-					EquipPlayerWeapon(LR_Player_Guard, NSW_Guard);
-					
+
 					Picked_NSW[LR_Player_Prisoner] = NSW_Prisoner;
 					Picked_NSW[LR_Player_Guard] = NSW_Guard;
 
