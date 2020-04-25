@@ -34,8 +34,8 @@ void GameDescription_OnPluginStart()
 	gH_Cvar_GameDescriptionOn = CreateConVar("sm_hosties_override_gamedesc", "1", "Enable or disable an override of the game description (standard Counter-Strike: Source, override to Hosties/jailbreak): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
 	gShadow_GameDescriptionOn = true;
 	
-	gH_Cvar_GameDescriptionTag = CreateConVar("sm_hosties_gamedesc_tag", "Hosties/Jailbreak v2", "Sets the game description tag.", 0);
-	Format(gShadow_GameDescriptionTag, sizeof(gShadow_GameDescriptionTag), "Hosties/Jailbreak v2");
+	gH_Cvar_GameDescriptionTag = CreateConVar("sm_hosties_gamedesc_tag", "ENT Hosties/Jailbreak v3", "Sets the game description tag.", 0);
+	Format(gShadow_GameDescriptionTag, sizeof(gShadow_GameDescriptionTag), "ENT Hosties/Jailbreak v3");
 	
 	HookConVarChange(gH_Cvar_GameDescriptionOn, GameDescription_CvarChanged);
 	HookConVarChange(gH_Cvar_GameDescriptionTag, GameDescription_CvarChanged);
