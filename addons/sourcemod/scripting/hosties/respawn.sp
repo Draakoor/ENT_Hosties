@@ -52,7 +52,7 @@ public Action Command_Respawn(int client, int args)
 			client,
 			target_list,
 			MAXPLAYERS,
-			COMMAND_FILTER_DEAD,
+			COMMAND_FILTER_DEAD|COMMAND_TARGET_IMMUNE|COMMAND_FILTER_NO_BOTS,
 			target_name,
 			sizeof(target_name),
 			tn_is_ml)) <= 0)
