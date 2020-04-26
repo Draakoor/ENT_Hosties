@@ -2,6 +2,7 @@
 Added feature to restore guns after LR
 Added Cvar - sm_hosties_lr_restoreweapon_t (Restore T weapons after LR)
 Added Cvar - sm_hosties_lr_restoreweapon_ct (Restore CT weapons after LR)
+Added new include to save and restore weapons
 Fixed TeamBlock glitches
 Fixed GraceTime finally
 Fixed NoBlock bug
