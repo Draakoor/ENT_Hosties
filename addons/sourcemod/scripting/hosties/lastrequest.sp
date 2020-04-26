@@ -31,6 +31,7 @@
 #include <lastrequest>
 #include <smlib>
 #include <multicolors>
+#include <hosties-restore>
 
 // Compiler options
 #pragma semicolon 1
@@ -38,13 +39,14 @@
 // Global variables
 int g_LastButtons[MAXPLAYERS+1];
 bool g_TriedToStab[MAXPLAYERS+1] = false;
-Handle m_hAllowTP;
 Handle StripZeus[MAXPLAYERS+1];
 int Picked_NSW[MAXPLAYERS+1];
 char Picked_Pistol[32][MAXPLAYERS+1];
 
-Handle GraceKiller = INVALID_HANDLE;
-bool GraceTimeOff = false;
+ConVar g_hRoundTime;
+int g_RoundTime;
+Handle RoundTimeTicker;
+Handle TickerState = INVALID_HANDLE;
 float After_Jump_pos[MAXPLAYERS+1][3];
 float Before_Jump_pos[MAXPLAYERS+1][3];
 bool LR_Player_Jumped[MAXPLAYERS+1] = false;
@@ -175,6 +177,8 @@ Handle gH_Cvar_LR_Beacon_Sound = null;
 Handle gH_Cvar_LR_AutoDisplay = null;
 Handle gH_Cvar_LR_BlockSuicide = null;
 Handle gH_Cvar_LR_VictorPoints = null;
+Handle gH_Cvar_LR_RestoreWeapon_T = null;
+Handle gH_Cvar_LR_RestoreWeapon_CT = null;
 
 int g_iLastCT_FreeAttacker = -1;
 int gShadow_LR_KnifeFight_On = -1;
@@ -251,6 +255,8 @@ char gShadow_LR_Beacon_Sound[PLATFORM_MAX_PATH];
 bool gShadow_LR_KillTimeouts = false;
 bool gShadow_LR_BlockSuicide = false;
 int gShadow_LR_VictorPoints = -1;
+int gShadow_LR_RestoreWeapon_T = -1;
+int gShadow_LR_RestoreWeapon_CT = -1;
 
 // Autostart
 LastRequest g_selection[MAXPLAYERS + 1];
@@ -375,15 +381,6 @@ void LastRequest_OnPluginStart()
 	if (g_Offset_SecAttack == -1)
 	{
 		SetFailState("Unable to find offset for next secondary attack.");
-	}
-	
-	//Set convar to thirdperson
-	if (!m_hAllowTP)
-	{
-		if (g_Game == Game_CSGO)
-		{
-			m_hAllowTP = FindConVar("sv_allow_thirdperson");
-		}
 	}
 	
 	// Console commands
@@ -581,6 +578,10 @@ void LastRequest_OnPluginStart()
 	gShadow_LR_BlockSuicide = false;
 	gH_Cvar_LR_VictorPoints = CreateConVar("sm_hosties_lr_victorpoints", "1", "Amount of frags to reward victor in an LR where other player automatically dies", 0, true, 0.0);
 	gShadow_LR_VictorPoints = 1;
+	gH_Cvar_LR_RestoreWeapon_T = CreateConVar("sm_hosties_lr_restoreweapon_t", "1", "Restore weapons after LR for T players: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
+	gShadow_LR_RestoreWeapon_T = 1;
+	gH_Cvar_LR_RestoreWeapon_CT = CreateConVar("sm_hosties_lr_restoreweapon_ct", "1", "Restore weapons after LR for CT players: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
+	gShadow_LR_RestoreWeapon_CT = 1;
 	
 	// Listen for changes
 	HookConVarChange(gH_Cvar_LR_KnifeFight_On, ConVarChanged_LastRequest);
@@ -658,6 +659,8 @@ void LastRequest_OnPluginStart()
 	HookConVarChange(gH_Cvar_LR_AutoDisplay, ConVarChanged_Setting);
 	HookConVarChange(gH_Cvar_LR_BlockSuicide, ConVarChanged_Setting);
 	HookConVarChange(gH_Cvar_LR_VictorPoints, ConVarChanged_Setting);
+	HookConVarChange(gH_Cvar_LR_RestoreWeapon_T, ConVarChanged_Setting);
+	HookConVarChange(gH_Cvar_LR_RestoreWeapon_CT, ConVarChanged_Setting);
 	
 	// Account for late loading
 	for (int idx = 1; idx <= MaxClients ; idx++)
@@ -956,27 +959,19 @@ int Local_IsClientInLR(int client)
 	return 0;
 }
 
-public Action Timer_RoundTimeLeft(Handle timer)
-{
-	GraceTimeOff = true;
-	GraceKiller = INVALID_HANDLE;
-	
-	return Plugin_Stop;
-}
-
 public Action LastRequest_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	float GraceTime; GraceTimeOff = false;
-	ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
-	GraceTime = GetConVarFloat(g_cvGraceTime);
-
-	if (GraceKiller != INVALID_HANDLE)
+	g_hRoundTime = FindConVar("mp_roundtime");
+	g_RoundTime = GetConVarInt(g_hRoundTime) * 60;
+	if (TickerState == INVALID_HANDLE)
 	{
-		KillTimer(GraceKiller);
-		GraceKiller = INVALID_HANDLE;
+		RoundTimeTicker = CreateTimer(1.0, Timer_RoundTimeLeft, g_RoundTime, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
-
-	GraceKiller = CreateTimer(GraceTime, Timer_RoundTimeLeft, _, TIMER_FLAG_NO_MAPCHANGE);
+	else
+	{
+		KillTimer(RoundTimeTicker);
+		RoundTimeTicker = CreateTimer(1.0, Timer_RoundTimeLeft, g_RoundTime, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	}
 
 	g_bAnnouncedThisRound = false;
 	
@@ -1054,12 +1049,10 @@ void StopActiveLRs(int client)
 
 public Action LastRequest_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
-	if (GraceKiller != INVALID_HANDLE)
+	if (TickerState != INVALID_HANDLE)
 	{
-		KillTimer(GraceKiller);
-		GraceKiller = INVALID_HANDLE;
+		KillTimer(RoundTimeTicker);
 	}
-	
 
 	// Block LRs and reset
 	g_bIsLRAvailable = false;
@@ -1468,24 +1461,12 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				SetEntityRenderMode(GTdeagle2, RENDER_NORMAL);
 			}	
 		}
-		case LR_ChickenFight:
-		{
-			if (gShadow_NoBlock)
-			{
-				if (IsClientInGame(winner) && IsPlayerAlive(winner))
-				{
-					UnblockEntity(winner, g_Offset_CollisionGroup);
-					GivePlayerItem(winner, "weapon_knife");
-				}	
-			}
-		}
 		case LR_HotPotato:
 		{
 			if (IsClientInGame(winner) && IsPlayerAlive(winner))
 			{
 				SetEntPropFloat(winner, Prop_Data, "m_flLaggedMovementValue", 1.0);
 				SetEntityMoveType(winner, MOVETYPE_WALK);
-				GivePlayerItem(winner, "weapon_knife");
 			}
 			
 			int HPdeagle = GetArrayCell(gH_DArray_LR_Partners, arrayIndex, view_as<int>(Block_Global4));
@@ -1501,7 +1482,6 @@ void CleanupLastRequest(int loser, int arrayIndex)
 			if (IsClientInGame(winner) && IsPlayerAlive(winner))
 			{
 				SetEntityMoveType(winner, MOVETYPE_WALK);
-				GivePlayerItem(winner, "weapon_knife");
 			}
 		}
 		case LR_Dodgeball:
@@ -1522,29 +1502,12 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				{
 					SetEntData(winner, g_Offset_Ammo+(view_as<int>(12)*4), 0, _, true);
 				}
-				
-				SetEntData(winner, g_Offset_Health, 100);
-				GivePlayerItem(winner, "weapon_knife");
-	
-				if (gShadow_NoBlock)
-				{
-					UnblockEntity(winner, g_Offset_CollisionGroup);
-				}
 			}
 		}
 		case LR_Race:
 		{
 			// free these resources	
 			CloseHandle(GetArrayCell(gH_DArray_LR_Partners, arrayIndex, 9));
-			if (IsClientInGame(winner) && IsPlayerAlive(winner))
-			{
-				GivePlayerItem(winner, "weapon_knife");
-				
-				if (!gShadow_NoBlock)
-				{				
-					BlockEntity(winner, g_Offset_CollisionGroup);
-				}			
-			}
 		}
 		case LR_JumpContest:
 		{
@@ -1552,22 +1515,11 @@ void CleanupLastRequest(int loser, int arrayIndex)
 
 			switch (JumpType)
 			{
-				case Jump_TheMost, Jump_BrinkOfDeath:
-				{
-					if (IsClientInGame(winner) && IsPlayerAlive(winner))
-					{
-						if (!gShadow_NoBlock)
-						{
-							BlockEntity(winner, g_Offset_CollisionGroup);						
-						}
-					}
-				}
 				case Jump_Farthest:
 				{
 					if (IsClientInGame(winner) && IsPlayerAlive(winner))
 					{
 						SetEntityMoveType(winner, MOVETYPE_WALK);
-						GivePlayerItem(winner, "weapon_knife");
 					}               
 				}
 			}
@@ -1588,6 +1540,8 @@ void CleanupLastRequest(int loser, int arrayIndex)
 		}
 	}
 	
+	ConVar Cvar_TeamBlock = FindConVar("mp_solid_teammates");
+	int TeamBlock = GetConVarInt(Cvar_TeamBlock);
 	if (IsClientInGame(LR_Player_Prisoner) && IsPlayerAlive(LR_Player_Prisoner))
 	{
 		if (StripZeus[LR_Player_Prisoner] != INVALID_HANDLE)
@@ -1596,20 +1550,23 @@ void CleanupLastRequest(int loser, int arrayIndex)
 			StripZeus[LR_Player_Prisoner] = INVALID_HANDLE;
 		}
 		
+		if (TeamBlock == 1)
+			BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
+		else
+			UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
+		
 		SetEntPropFloat(LR_Player_Prisoner, Prop_Data, "m_flLaggedMovementValue", 1.0);
-		BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);	
 		
 		SetEntityMoveType(LR_Player_Prisoner, MOVETYPE_WALK);
 		
 		StripAllWeapons(LR_Player_Prisoner);
-		GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
 		
+		if (gShadow_LR_RestoreWeapon_T == 1)
+			RestoreWeapons(LR_Player_Prisoner);
+		else
+			GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
+
 		SetEntityHealth(LR_Player_Prisoner, 100);
-		
-		if (gShadow_LR_Debug_Enabled == true)
-		{
-			CPrintToChatAll("\x01[\x07Entity-Debug\x01] \x06Cleaned player %N", LR_Player_Prisoner);
-		}
 	}
 	
 	if (IsClientInGame(LR_Player_Guard) && IsPlayerAlive(LR_Player_Guard))
@@ -1621,19 +1578,22 @@ void CleanupLastRequest(int loser, int arrayIndex)
 		}
 		
 		SetEntPropFloat(LR_Player_Guard, Prop_Data, "m_flLaggedMovementValue", 1.0);
-		BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);	
+		
+		if (TeamBlock == 1)
+			BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
+		else
+			UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
 		
 		SetEntityMoveType(LR_Player_Guard, MOVETYPE_WALK);
 		
 		StripAllWeapons(LR_Player_Guard);
-		GivePlayerItem(LR_Player_Guard, "weapon_knife");
+		
+		if (gShadow_LR_RestoreWeapon_CT == 1)
+			RestoreWeapons(LR_Player_Guard);
+		else
+			GivePlayerItem(LR_Player_Guard, "weapon_knife");
 		
 		SetEntityHealth(LR_Player_Guard, 100);
-		
-		if (gShadow_LR_Debug_Enabled == true)
-		{
-			CPrintToChatAll("\x01[\x07Entity-Debug\x01] \x06Cleaned player %N", LR_Player_Guard);
-		}
 	}
 }
 
@@ -2467,7 +2427,7 @@ public Action OnWeaponDrop(int client, int weapon)
 						{
 							if (IsValidEntity(GTdeagle1))
 							{
-								SetEntData(GTdeagle1, g_Offset_Clip1, 7);
+								SetEntData(GTdeagle1, g_Offset_Clip1, 250);
 							}
 							
 							if (weapon == GTdeagle1)
@@ -2489,7 +2449,7 @@ public Action OnWeaponDrop(int client, int weapon)
 						{
 							if (IsValidEntity(GTdeagle2))
 							{
-								SetEntData(GTdeagle2, g_Offset_Clip1, 7);
+								SetEntData(GTdeagle2, g_Offset_Clip1, 250);
 							}
 
 							if (weapon == GTdeagle2)
@@ -2706,6 +2666,8 @@ void LastRequest_OnConfigsExecuted()
 	gShadow_LR_AutoDisplay = view_as<bool>(GetConVarInt(gH_Cvar_LR_AutoDisplay));
 	gShadow_LR_BlockSuicide = view_as<bool>(GetConVarInt(gH_Cvar_LR_BlockSuicide));
 	gShadow_LR_VictorPoints = GetConVarInt(gH_Cvar_LR_VictorPoints);
+	gShadow_LR_RestoreWeapon_T = GetConVarInt(gH_Cvar_LR_RestoreWeapon_T);
+	gShadow_LR_RestoreWeapon_CT = GetConVarInt(gH_Cvar_LR_RestoreWeapon_CT);
 	if (gShadow_LR_BlockSuicide && !g_bListenersAdded)
 	{
 		AddCommandListener(Suicide_Check, "kill");
@@ -2982,6 +2944,14 @@ public void ConVarChanged_Setting(Handle cvar, const char[] oldValue, const char
 	{
 		gShadow_LR_VictorPoints = StringToInt(newValue);
 	}
+	else if (cvar == gH_Cvar_LR_RestoreWeapon_T)
+	{
+		gShadow_LR_RestoreWeapon_T = StringToInt(newValue);
+	}
+	else if (cvar == gH_Cvar_LR_RestoreWeapon_CT)
+	{
+		gShadow_LR_RestoreWeapon_CT = StringToInt(newValue);
+	}
 	else if (cvar == gH_Cvar_LR_Damage)
 	{
 		gShadow_LR_Damage = view_as<bool>(StringToInt(newValue));
@@ -3181,7 +3151,16 @@ public Action Command_LastRequest(int client, int args)
 								{
 									if (NumCTsAvailable > 0)
 									{
-										if (GraceTimeOff)
+										ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
+										ConVar g_cvFreezeTime = FindConVar("mp_freezetime");
+										
+										int RoundTime = GameRules_GetProp("m_iRoundTime");
+										int GraceTime = GetConVarInt(g_cvGraceTime);
+										int FreezeTime = GetConVarInt(g_cvFreezeTime);
+										
+										int ToCheckTime = (RoundTime - GraceTime - FreezeTime);
+									
+										if (g_RoundTime < ToCheckTime)
 										{
 											DisplayLastRequestMenu(client, Ts, CTs);
 										}
@@ -3232,6 +3211,17 @@ public Action Command_LastRequest(int client, int args)
 	}
 
 	return Plugin_Handled;
+}
+
+public Action Timer_RoundTimeLeft(Handle timer, int RoundTime)
+{
+	if (g_RoundTime != 0)
+	{
+		g_RoundTime = g_RoundTime - 1;
+	}
+	else
+		return Plugin_Stop;
+	return Plugin_Continue;
 }
 
 void DisplayLastRequestMenu(int client, int Ts, int CTs)
@@ -4059,8 +4049,15 @@ void InitializeGame(int iPartnersIndex)
 	{
 		case LR_KnifeFight:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 
 			KnifeType KnifeChoice;
 			ResetPack(gH_BuildLR[LR_Player_Prisoner]);
@@ -4120,8 +4117,15 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_Shot4Shot:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 
 			// grab weapon choice
 			PistolWeapon PistolChoice;
@@ -4285,6 +4289,16 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_GunToss:
 		{
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
+			
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, false, view_as<int>(Block_Global1)); // GTp1dropped
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, false, view_as<int>(Block_Global2)); // GTp2dropped
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, false, view_as<int>(Block_Global3)); // GTp1done
@@ -4310,9 +4324,6 @@ void InitializeGame(int iPartnersIndex)
 			WritePackFloat(DataPackPosition, 0.0);
 			WritePackFloat(DataPackPosition, 0.0);
 			WritePackFloat(DataPackPosition, 0.0); // player 2 last jump position
-
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
 
 			int GTdeagle1 = GivePlayerItem(LR_Player_Prisoner, "weapon_deagle");
 			int GTdeagle2 = GivePlayerItem(LR_Player_Guard, "weapon_deagle");
@@ -4344,17 +4355,21 @@ void InitializeGame(int iPartnersIndex)
 				SetEntData(LR_Player_Guard, g_Offset_Ammo+(iAmmoType*4), 0, _, true);
 				SetEntData(LR_Player_Prisoner, g_Offset_Ammo+(iAmmoType*4), 0, _, true);
 			}
-
-			SetEntData(LR_Player_Prisoner, g_Offset_Health, 100);
-			SetEntData(LR_Player_Guard, g_Offset_Health, 100);
 			
 			// announce LR
 			CPrintToChatAll("%s %t", ChatBanner, "LR GT Start", LR_Player_Prisoner, LR_Player_Guard);
 		}
 		case LR_ChickenFight:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 
 			if (g_ChickenFightTimer == INVALID_HANDLE)
 			{
@@ -4372,8 +4387,15 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_HotPotato:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 
 			// always give potato to the prisoner
 			int potatoClient = LR_Player_Prisoner;
@@ -4468,8 +4490,15 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_Dodgeball:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 
 			// bug fix...
 			if(g_Game != Game_CSGO)
@@ -4502,8 +4531,15 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_NoScope:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 
 			GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
 			GivePlayerItem(LR_Player_Guard, "weapon_knife");
@@ -4703,8 +4739,15 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_Mag4Mag:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 			
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, 0, view_as<int>(Block_Global2)); // M4MroundsFired
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, 0, view_as<int>(Block_Global3)); // M4Mammo
@@ -4895,8 +4938,15 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_Race:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 			
 			if (!gShadow_NoBlock)
 			{
@@ -4934,8 +4984,15 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_RussianRoulette:
 		{
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
 			
 			float p1pos[3], p2pos[3];
 			GetClientAbsOrigin(LR_Player_Prisoner, p1pos);
@@ -5009,15 +5066,22 @@ void InitializeGame(int iPartnersIndex)
 			}	
 		}
 		case LR_JumpContest:
-		{		
+		{
+			if (gShadow_LR_RestoreWeapon_T == 1)
+				SaveWeapons(LR_Player_Prisoner);
+			else
+				StripAllWeapons(LR_Player_Prisoner);
+				
+			if (gShadow_LR_RestoreWeapon_CT == 1)
+				SaveWeapons(LR_Player_Guard);
+			else
+				StripAllWeapons(LR_Player_Guard);
+			
 			int JumpChoice;
 			ResetPack(gH_BuildLR[LR_Player_Prisoner]);
 			JumpChoice = ReadPackCell(gH_BuildLR[LR_Player_Prisoner]);
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, JumpChoice, view_as<int>(Block_Global2));
-			
-			StripAllWeapons(LR_Player_Prisoner);
-			StripAllWeapons(LR_Player_Guard);
-			
+
 			switch (JumpChoice)
 			{
 				case Jump_TheMost:
@@ -5076,12 +5140,6 @@ void InitializeGame(int iPartnersIndex)
 				}
 				case Jump_BrinkOfDeath:
 				{
-					StripAllWeapons(LR_Player_Prisoner);
-					StripAllWeapons(LR_Player_Guard);
-
-					SetEntData(LR_Player_Prisoner, g_Offset_Health, 100);
-					SetEntData(LR_Player_Guard, g_Offset_Health, 100);
-					
 					if (!gShadow_NoBlock)
 					{
 						UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
@@ -6655,6 +6713,14 @@ public Action LastRequest_PlayerSpawn(Event event, const char[] name, bool dontB
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	SetCorrectPlayerColor(client);
+	
+	ConVar Cvar_TeamBlock = FindConVar("mp_solid_teammates");
+	int TeamBlock = GetConVarInt(Cvar_TeamBlock);
+	
+	if (TeamBlock == 1)
+		BlockEntity(client, g_Offset_CollisionGroup);
+	else
+		UnblockEntity(client, g_Offset_CollisionGroup);
 }
 
 void SetCorrectPlayerColor(int client)
@@ -6672,13 +6738,4 @@ void SetCorrectPlayerColor(int client)
 	{
 		SetEntityRenderColor(client, 255, 255, 255, 255);
 	}
-}
-
-stock bool IsValidClient(int client, bool alive = false, bool bots = false)
-{
-	if (client > 0 && client <= MaxClients && IsClientInGame(client) && (alive == false || IsPlayerAlive(client)) && (bots == false && !IsFakeClient(client)))
-	{
-		return true;
-	}
-	return false;
 }
