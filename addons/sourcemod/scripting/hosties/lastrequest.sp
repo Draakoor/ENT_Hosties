@@ -2137,7 +2137,8 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					}
 				}
 				else if (((attacker == LR_Player_Guard && victim != LR_Player_Prisoner) || \
-					(attacker == LR_Player_Prisoner && victim != LR_Player_Guard)) && Type != LR_Rebel)
+					(attacker == LR_Player_Prisoner && victim != LR_Player_Guard)) && Type != LR_Rebel &&
+					(GetClientTeam(attacker) != GetClientTeam(victim)))
 				{
 					damage = 0.0;
 					RightKnifeAntiCheat(attacker, idx);
@@ -2235,7 +2236,7 @@ public Action OnWeaponDecideUse(int client, int weapon)
 						return Plugin_Handled;
 					}
 				}
-				else
+				else if ((client  == LR_Player_Prisoner) || (client  == LR_Player_Guard))
 				{
 					return Plugin_Handled;
 				}
@@ -4033,6 +4034,13 @@ void InitializeGame(int iPartnersIndex)
 	int LR_Player_Prisoner = GetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, view_as<int>(Block_Prisoner));
 	int LR_Player_Guard = GetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, view_as<int>(Block_Guard));
 	
+	// Beacon players
+	if (gShadow_LR_Beacons && selection != LR_Rebel && selection != LR_RussianRoulette)
+	{
+		AddBeacon(LR_Player_Prisoner);
+		AddBeacon(LR_Player_Guard);
+	}
+	
 	// log the event for stats engines
 	if (selection < LastRequest)
 	{
@@ -5082,6 +5090,12 @@ void InitializeGame(int iPartnersIndex)
 			JumpChoice = ReadPackCell(gH_BuildLR[LR_Player_Prisoner]);
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, JumpChoice, view_as<int>(Block_Global2));
 
+			if (!gShadow_NoBlock)
+			{
+				UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
+				UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
+			}
+
 			switch (JumpChoice)
 			{
 				case Jump_TheMost:
@@ -5099,11 +5113,6 @@ void InitializeGame(int iPartnersIndex)
 					
 					CPrintToChatAll("%s %t", ChatBanner, "Start Jump Contest", LR_Player_Prisoner, LR_Player_Guard);
 					
-					if (!gShadow_NoBlock)
-					{
-						UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
-						UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
-					}
 					float Prisoner_Position[3];
 					GetClientAbsOrigin(LR_Player_Prisoner, Prisoner_Position);
 					TeleportEntity(LR_Player_Guard, Prisoner_Position, NULL_VECTOR, NULL_VECTOR);
@@ -5140,15 +5149,12 @@ void InitializeGame(int iPartnersIndex)
 				}
 				case Jump_BrinkOfDeath:
 				{
-					if (!gShadow_NoBlock)
-					{
-						UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
-						UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
-					}
-					
 					float Prisoner_Position[3];
 					GetClientAbsOrigin(LR_Player_Prisoner, Prisoner_Position);
 					TeleportEntity(LR_Player_Guard, Prisoner_Position, NULL_VECTOR, NULL_VECTOR);
+					
+					UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
+					UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
 					
 					CPrintToChatAll("%s %t", ChatBanner, "Start Brink of Death", LR_Player_Prisoner, LR_Player_Guard);
 					
@@ -5192,13 +5198,6 @@ void InitializeGame(int iPartnersIndex)
 			CloseHandle(gH_BuildLR[LR_Player_Prisoner]);		
 		}
 		gH_BuildLR[LR_Player_Prisoner] = null;
-
-		// Beacon players
-		if (gShadow_LR_Beacons && selection != LR_Rebel && selection != LR_RussianRoulette)
-		{
-			AddBeacon(LR_Player_Prisoner);
-			AddBeacon(LR_Player_Guard);
-		}
 		
 		if(g_Game == Game_CSGO)
 		{
@@ -5234,8 +5233,7 @@ void InitializeGame(int iPartnersIndex)
 					SetEntProp(LR_Player_Guard, Prop_Send, "m_bWearingSuit", 0);
 					SetEntProp(LR_Player_Guard, Prop_Send, "m_ArmorValue", 0, 0);
 				}
-			
-				
+					
 				StripZeus[LR_Player_Guard] = CreateTimer(0.3, Timer_StripZeus, LR_Player_Guard, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
@@ -5631,6 +5629,9 @@ public Action Timer_Countdown(Handle timer)
 				{
 					SetEntityMoveType(LR_Player_Prisoner, MOVETYPE_WALK);
 					SetEntityMoveType(LR_Player_Guard, MOVETYPE_WALK);
+					
+					UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
+					UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
 					
 					// make timer to check the race winner
 					if (g_RaceTimer == null)
