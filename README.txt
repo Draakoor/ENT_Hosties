@@ -1,5 +1,5 @@
 This is a modified version of the original SM_Hosties with a lot of fixes and changes.
-I have lot of plans to do with it.
+I have lot of plans to do with it. 
 
 
 Description
