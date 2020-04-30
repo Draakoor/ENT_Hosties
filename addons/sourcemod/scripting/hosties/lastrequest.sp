@@ -4,9 +4,10 @@
  *
  * This file is part of the SM Hosties project.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, version 3.0, as published by the
- * Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) 
+ * any later version.
  * 
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -2145,12 +2146,11 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				}
 				else if (((attacker == LR_Player_Guard && victim != LR_Player_Prisoner) || \
 					(attacker == LR_Player_Prisoner && victim != LR_Player_Guard)) && Type != LR_Rebel &&
-					(GetClientTeam(attacker) != GetClientTeam(victim)))
+					(GetClientTeam(attacker) != GetClientTeam(victim)) && Type != LR_Dodgeball)
 				{
 					damage = 0.0;
 					RightKnifeAntiCheat(attacker, idx);
 					DecideRebelsFate(attacker, idx);
-					PrintToChatAll("Handle1");
 					return Plugin_Changed;
 				}
 				else if (Type == LR_NoScope && \
@@ -4065,12 +4065,22 @@ void InitializeGame(int iPartnersIndex)
 	{
 		SetEntPropFloat(LR_Player_Prisoner, Prop_Data, "m_flLaggedMovementValue", 1.0);
 		SetEntityGravity(LR_Player_Prisoner, 1.0);
+		
+		if (g_Game == Game_CSGO)
+		{
+			SetEntProp(LR_Player_Prisoner, Prop_Send, "m_passiveItems", 0, 1, 1);
+		}
 	}
 	
 	if (IsValidClient(LR_Player_Guard))
 	{
 		SetEntPropFloat(LR_Player_Guard, Prop_Data, "m_flLaggedMovementValue", 1.0);
 		SetEntityGravity(LR_Player_Guard, 1.0);
+		
+		if (g_Game == Game_CSGO)
+		{
+			SetEntProp(LR_Player_Guard, Prop_Send, "m_passiveItems", 0, 1, 1);
+		}
 	}
 	
 	switch (selection)
@@ -6637,10 +6647,6 @@ public Action Timer_StripZeus(Handle timer, int client)
 		if (TaserAmmo != 0)
 		{
 			Client_RemoveWeapon(client, "weapon_taser", false);
-			if (gShadow_LR_Debug_Enabled == true)
-			{
-				CPrintToChatAll("\x01[\x07Entity-Debug\x01] \x06Zeus Stripped from \x10%s", client);
-			}
 		}
 	}
 	else
@@ -6694,10 +6700,6 @@ void RightKnifeAntiCheat(int client, int idx)
 			{
 				if (g_TriedToStab[client] == true)
 				{					
-					if (gShadow_LR_Debug_Enabled == true)
-					{
-						CPrintToChatAll("\x01[\x07Entity-Debug\x01] \x10%N \x06has been killed by RightKnifeAntiCheat", client);
-					}
 					DecideRebelsFate(client, idx);
 					g_TriedToStab[client] = false;
 				}
