@@ -37,7 +37,7 @@
 #pragma 	semicolon 					1
 
 // Constants
-#define 	PLUGIN_VERSION				"3.1.9b"
+#define 	PLUGIN_VERSION				"3.1.11b"
 #define 	MAX_DISPLAYNAME_SIZE		64
 #define 	MAX_DATAENTRY_SIZE			5
 #define 	SERVERTAG					"ENT_Hosties, LR, LastRequest"
@@ -67,7 +67,7 @@
 // Add intelli-respawn
 #define	MODULE_RESPAWN						1
 // Add control system
-#define	MODULE_CONTROL						1
+#define	MODULE_CONTROL						0
 
 /******************************************************************************
                    !EDIT BELOW THIS COMMENT AT YOUR OWN PERIL!

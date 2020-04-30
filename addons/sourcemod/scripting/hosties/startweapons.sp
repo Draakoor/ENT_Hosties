@@ -87,7 +87,11 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 				{
 					if (!Client_HasWeapon(client, gs_T_WeaponList[Tidx]))
 					{
-						GivePlayerItem(client, gs_T_WeaponList[Tidx]);
+						int wep = GivePlayerItem(client, gs_T_WeaponList[Tidx]);
+						if (Weapon_IsValid(wep))
+						{
+							EquipPlayerWeapon(client, wep);
+						}
 					}
 				}
 			}
@@ -108,7 +112,11 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 
 					if (!Client_HasWeapon(client, sWeapon))
 					{
-						GivePlayerItem(client, sWeapon);
+						int wep = GivePlayerItem(client, sWeapon);
+						if (Weapon_IsValid(wep))
+						{
+							EquipPlayerWeapon(client, wep);
+						}
 					}
 				}
 			}

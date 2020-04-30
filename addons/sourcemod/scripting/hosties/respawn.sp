@@ -108,18 +108,21 @@ void DisplayRespawnMenu(int client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	int targets_added = AddTargetsToMenu2(menu, client, COMMAND_FILTER_DEAD|COMMAND_TARGET_IMMUNE|COMMAND_FILTER_NO_BOTS);
-	if (targets_added == 0)
+	if (IsValidClient(client))
 	{
-		CReplyToCommand(client, "%s %t", ChatBanner, "Target is not in game");
-		if (gH_TopMenu != INVALID_HANDLE)
+		int targets_added = AddTargetsToMenu2(menu, client, COMMAND_FILTER_DEAD|COMMAND_TARGET_IMMUNE|COMMAND_FILTER_NO_BOTS);
+		if (targets_added == 0)
 		{
-			DisplayTopMenu(gH_TopMenu, client, TopMenuPosition_LastCategory);
+			CReplyToCommand(client, "%s %t", ChatBanner, "Target is not in game");
+			if (gH_TopMenu != INVALID_HANDLE)
+			{
+				DisplayTopMenu(gH_TopMenu, client, TopMenuPosition_LastCategory);
+			}
 		}
-	}
-	else
-	{
-		DisplayMenu(menu, client, MENU_TIME_FOREVER);
+		else
+		{
+			DisplayMenu(menu, client, MENU_TIME_FOREVER);
+		}
 	}
 }
 

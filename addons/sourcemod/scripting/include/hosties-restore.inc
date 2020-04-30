@@ -86,13 +86,16 @@ stock void RestoreWeapons(int aimed)
 		{
 			if (!StrEqual(C_sWeapon[aimed][g], "weapon_flashbang"))
 			{
-				GivePlayerItem(aimed, C_sWeapon[aimed][g]);
+				int wep = GivePlayerItem(aimed, C_sWeapon[aimed][g]);
+				if (Weapon_IsValid(wep))
+				{
+					EquipPlayerWeapon(aimed, wep);
+				}
 			}
 			else
 			{
 				for (int x = 1; x <= C_FlashCounter[aimed]; x++)
 				{
-
 					GivePlayerItem(aimed, C_sWeapon[aimed][g]);
 				}
 			}

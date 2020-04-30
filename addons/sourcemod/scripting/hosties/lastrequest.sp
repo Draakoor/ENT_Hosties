@@ -1550,7 +1550,7 @@ void CleanupLastRequest(int loser, int arrayIndex)
 			StripZeus[LR_Player_Prisoner] = INVALID_HANDLE;
 		}
 		
-		if (TeamBlock == 1)
+		if (TeamBlock == 1 || TeamBlock == 2)
 			BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
 		else
 			UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
@@ -1564,7 +1564,10 @@ void CleanupLastRequest(int loser, int arrayIndex)
 		if (gShadow_LR_RestoreWeapon_T == 1)
 			RestoreWeapons(LR_Player_Prisoner);
 		else
-			GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
+		{
+			int malee = GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
+			EquipPlayerWeapon(LR_Player_Prisoner, malee);
+		}
 
 		SetEntityHealth(LR_Player_Prisoner, 100);
 	}
@@ -1579,7 +1582,7 @@ void CleanupLastRequest(int loser, int arrayIndex)
 		
 		SetEntPropFloat(LR_Player_Guard, Prop_Data, "m_flLaggedMovementValue", 1.0);
 		
-		if (TeamBlock == 1)
+		if (TeamBlock == 1 || TeamBlock == 2)
 			BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
 		else
 			UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
@@ -1591,7 +1594,10 @@ void CleanupLastRequest(int loser, int arrayIndex)
 		if (gShadow_LR_RestoreWeapon_CT == 1)
 			RestoreWeapons(LR_Player_Guard);
 		else
-			GivePlayerItem(LR_Player_Guard, "weapon_knife");
+		{
+			int malee = GivePlayerItem(LR_Player_Guard, "weapon_knife");
+			EquipPlayerWeapon(LR_Player_Guard, malee);
+		}
 		
 		SetEntityHealth(LR_Player_Guard, 100);
 	}
@@ -2093,6 +2099,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					GetClientWeapon(attacker, UsedWeapon, sizeof(UsedWeapon));
 					if (!StrEqual(UsedWeapon, "weapon_flashbang"))
 					{
+						PrintToChatAll("Handle1");
 						if (gShadow_LR_Debug_Enabled == true)
 						{
 							CPrintToChatAll("\x01[\x07Entity-Debug\x01] \x10%N \x06has been killed for using other weapon in DodgeBall (%s)", attacker, UsedWeapon);
@@ -2143,6 +2150,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					damage = 0.0;
 					RightKnifeAntiCheat(attacker, idx);
 					DecideRebelsFate(attacker, idx);
+					PrintToChatAll("Handle1");
 					return Plugin_Changed;
 				}
 				else if (Type == LR_NoScope && \
@@ -4396,11 +4404,8 @@ void InitializeGame(int iPartnersIndex)
 				g_ChickenFightTimer = CreateTimer(0.2, Timer_ChickenFight, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 
-			if (gShadow_NoBlock)
-			{
-				BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
-				BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
-			}
+			BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
+			BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
 
 			// announce LR
 			CPrintToChatAll("%s %t", ChatBanner, "LR CF Start", LR_Player_Prisoner, LR_Player_Guard);
@@ -4526,6 +4531,9 @@ void InitializeGame(int iPartnersIndex)
 				SetEntData(LR_Player_Prisoner, g_Offset_Ammo + (12 * 4), 0, _, true);
 				SetEntData(LR_Player_Guard, g_Offset_Ammo + (12 * 4), 0, _, true);
 			}
+
+			BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
+			BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
 
 			// set HP
 			SetEntData(LR_Player_Prisoner, g_Offset_Health, 1);
@@ -6735,7 +6743,7 @@ public Action LastRequest_PlayerSpawn(Event event, const char[] name, bool dontB
 	ConVar Cvar_TeamBlock = FindConVar("mp_solid_teammates");
 	int TeamBlock = GetConVarInt(Cvar_TeamBlock);
 	
-	if (TeamBlock == 1)
+	if (TeamBlock == 1 || TeamBlock == 2)
 		BlockEntity(client, g_Offset_CollisionGroup);
 	else
 		UnblockEntity(client, g_Offset_CollisionGroup);
