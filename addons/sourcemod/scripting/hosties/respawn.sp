@@ -125,6 +125,10 @@ void DisplayRespawnMenu(int client)
 			DisplayMenu(menu, client, MENU_TIME_FOREVER);
 		}
 	}
+	else
+	{
+		CReplyToCommand(client, "[Hosties] you have to be in game to use that command!");
+	}
 }
 
 public void AdminMenu_Respawn(Handle topmenu, 

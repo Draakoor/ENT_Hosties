@@ -38,7 +38,7 @@
 #pragma 	semicolon 					1
 
 // Constants
-#define 	PLUGIN_VERSION				"3.1.12b"
+#define 	PLUGIN_VERSION				"3.1.13b"
 #define 	MAX_DISPLAYNAME_SIZE		64
 #define 	MAX_DATAENTRY_SIZE			5
 #define 	SERVERTAG					"ENT_Hosties, LR, LastRequest"
@@ -67,8 +67,6 @@
 #define	MODULE_GUNSAFETY					1
 // Add intelli-respawn
 #define	MODULE_RESPAWN						1
-// Add control system
-#define	MODULE_CONTROL						0
 
 /******************************************************************************
                    !EDIT BELOW THIS COMMENT AT YOUR OWN PERIL!
@@ -82,6 +80,7 @@ GameType g_Game = Game_Unknown;
 Handle gH_TopMenu = INVALID_HANDLE;
 TopMenuObject gM_Hosties = INVALID_TOPMENUOBJECT;
 
+char gShadow_Hosties_LogFile[PLATFORM_MAX_PATH];
 Handle gH_Cvar_LR_Debug_Enabled = INVALID_HANDLE;
 bool gShadow_LR_Debug_Enabled = false;
 
@@ -133,9 +132,6 @@ int gA_FreekillsOfCT[MAXPLAYERS+1];
 #endif
 #if (MODULE_RESPAWN == 1)
 #include "hosties/respawn.sp"
-#endif
-#if (MODULE_CONTROL == 1)
-#include "hosties/control.sp"
 #endif
 
 // ConVars
@@ -208,11 +204,14 @@ public void OnPluginStart()
 	#if (MODULE_RESPAWN == 1)
 	Respawn_OnPluginStart();
 	#endif
-	#if (MODULE_CONTROL == 1)
-	Control_OnPluginStart();
-	#endif
 	
-	AutoExecConfig(true, "sm_hosties2");
+	char Folder[256];
+	BuildPath(Path_SM, Folder, sizeof(Folder), "logs/Entity");
+	DirExistsEx(Folder);
+	
+	SetLogFile(gShadow_Hosties_LogFile, "Hosties-Logs", "Entity");
+	if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Hosties Successfully started.");
+	AutoExecConfig(true, "sm_hosties3");
 }
 
 public void OnMapStart()
@@ -222,9 +221,6 @@ public void OnMapStart()
 	#endif
 	#if (MODULE_LASTREQUEST == 1)
 	LastRequest_OnMapStart();
-	#endif
-	#if (MODULE_CONTROL == 1)
-	Control_OnMapStart();
 	#endif
 }
 
@@ -429,3 +425,27 @@ public void HostiesCategoryHandler(Handle topmenu, TopMenuAction action, TopMenu
 	}
 }
 
+stock void SetLogFile(char path[PLATFORM_MAX_PATH], char[] file, char[] folder)
+{
+	char LogDate[12];
+	FormatTime(LogDate, sizeof(LogDate), "%y-%m-%d");
+	Format(path, sizeof(path), "logs/%s/%s-%s.log", folder, file, LogDate);
+
+	BuildPath(Path_SM, path, sizeof(path), path);
+}
+
+stock bool DirExistsEx(const char[] path)
+{
+	if (!DirExists(path))
+	{
+		CreateDirectory(path, 511);
+
+		if (!DirExists(path))
+		{
+			LogError("Couldn't create folder! (%s)", path);
+			return false;
+		}
+	}
+
+	return true;
+}

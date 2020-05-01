@@ -123,11 +123,6 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 			}
 		}
 	}
-	
-	if (gShadow_LR_Debug_Enabled == true)
-	{
-		CPrintToChatAll("\x01[\x07Entity-Debug\x01] \x06Starting weapons config executed on \x10%N", client);
-	}
 }
 
 public void StartWeapons_CvarChanged(Handle cvar, const char[] oldValue, const char[] newValue)

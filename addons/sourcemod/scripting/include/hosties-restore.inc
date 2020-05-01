@@ -96,6 +96,18 @@ stock void RestoreWeapons(int aimed)
 					EquipPlayerWeapon(aimed, wep);
 				}
 			}
+			else if (StrEqual(C_sWeapon[aimed][g], "weapon_fists"))
+			{
+				int weapon;
+				while((weapon = GetPlayerWeaponSlot(g, CS_SLOT_KNIFE)) != -1)
+				{
+					RemovePlayerItem(g, weapon);
+					AcceptEntityInput(weapon, "Kill");
+				}
+			
+				int iMelee = GivePlayerItem(g, "weapon_fists");
+				EquipPlayerWeapon(g, iMelee);
+			}
 			else
 			{
 				for (int x = 1; x <= C_FlashCounter[aimed]; x++)
