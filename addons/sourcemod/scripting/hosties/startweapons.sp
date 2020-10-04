@@ -74,7 +74,7 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	
-	if (gShadow_StartWeaponsOn)
+	if (gShadow_StartWeaponsOn && IsValidClient(client))
 	{
 		StripAllWeapons(client);
 		RemoveDangerZone(client);
@@ -92,6 +92,14 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 						if (Weapon_IsValid(wep))
 						{
 							EquipPlayerWeapon(client, wep);
+							
+							if (gShadow_LR_Debug_Enabled == true)
+							{
+								char NsWeaponName[64];
+								GetEdictClassname(wep, NsWeaponName, sizeof(NsWeaponName));
+								ReplaceString(NsWeaponName, sizeof(NsWeaponName), "weapon_", "", false); 
+								LogToFileEx(gShadow_Hosties_LogFile, "%L equipped with a %s - [startweapons.sp - 101]", client, NsWeaponName);
+							}
 						}
 					}
 				}
@@ -117,6 +125,14 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 						if (Weapon_IsValid(wep))
 						{
 							EquipPlayerWeapon(client, wep);
+							
+							if (gShadow_LR_Debug_Enabled == true)
+							{
+								char NsWeaponName[64];
+								GetEdictClassname(wep, NsWeaponName, sizeof(NsWeaponName));
+								ReplaceString(NsWeaponName, sizeof(NsWeaponName), "weapon_", "", false); 
+								LogToFileEx(gShadow_Hosties_LogFile, "%L equipped with a %s - [startweapons.sp - 134]", client, NsWeaponName);
+							}
 						}
 					}
 				}

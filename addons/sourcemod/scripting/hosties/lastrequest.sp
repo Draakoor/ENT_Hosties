@@ -40,7 +40,6 @@
 // Global variables
 int g_LastButtons[MAXPLAYERS+1];
 bool g_TriedToStab[MAXPLAYERS+1] = false;
-Handle StripZeus[MAXPLAYERS+1];
 int Picked_NSW[MAXPLAYERS+1];
 char Picked_Pistol[32][MAXPLAYERS+1];
 
@@ -89,7 +88,6 @@ int blueColor[] = {50, 75, 255, 255};
 int greyColor[] = {128, 128, 128, 255};
 int yellowColor[] = {255, 255, 0, 255};
 
-int g_Offset_Health = -1;
 int g_Offset_Armor = -1;
 int g_Offset_Clip1 = -1;
 int g_Offset_Ammo = -1;
@@ -105,159 +103,84 @@ Handle gH_DArray_LR_Partners = null;
 Handle gH_DArray_Beacons = null;
 Handle gH_DArray_LR_CustomNames = null;
 
-Handle gH_Cvar_LR_KnifeFight_On = null;
-Handle gH_Cvar_LR_Shot4Shot_On = null;
-Handle gH_Cvar_LR_GunToss_On = null;
-Handle gH_Cvar_LR_ChickenFight_On = null;
-Handle gH_Cvar_LR_HotPotato_On = null;
-Handle gH_Cvar_LR_Dodgeball_On = null;
-Handle gH_Cvar_LR_NoScope_On = null;
-Handle gH_Cvar_LR_RockPaperScissors_On = null;
-Handle gH_Cvar_LR_Rebel_On = null;
-Handle gH_Cvar_LR_Mag4Mag_On = null;
-Handle gH_Cvar_LR_Race_On = null;
-Handle gH_Cvar_LR_RussianRoulette_On = null;
-Handle gH_Cvar_LR_JumpContest_On = null;
-Handle gH_Cvar_Announce_Delay_Enable = null;
-Handle gH_Cvar_LR_HotPotato_Mode = null;
-Handle gH_Cvar_MaxPrisonersToLR = null;
-Handle gH_Cvar_RebelAction = null;
-Handle gH_Cvar_RebelHandling = null;
-Handle gH_Cvar_SendGlobalMsgs = null;
-Handle gH_Cvar_ColorRebels = null;
-Handle gH_Cvar_LR_Enable = null;
-Handle gH_Cvar_LR_MenuTime = null;
-Handle gH_Cvar_LR_KillTimeouts = null;
-Handle gH_Cvar_ColorRebels_Red = null;
-Handle gH_Cvar_ColorRebels_Blue = null;
-Handle gH_Cvar_ColorRebels_Green = null;
-Handle gH_Cvar_LR_Beacons = null;
-Handle gH_Cvar_LR_HelpBeams = null;
-Handle gH_Cvar_LR_HelpBeams_Distance = null;
-Handle gH_Cvar_LR_Beacon_Interval = null;
-Handle gH_Cvar_RebelOnImpact = null;
-Handle gH_Cvar_LR_ChickenFight_Slay = null;
-Handle gH_Cvar_LR_ChickenFight_C_Blue = null;
-Handle gH_Cvar_LR_ChickenFight_C_Red = null;
-Handle gH_Cvar_LR_ChickenFight_C_Green = null;
-Handle gH_Cvar_LR_Dodgeball_CheatCheck = null;
-Handle gH_Cvar_LR_Dodgeball_SpawnTime = null;
-Handle gH_Cvar_LR_Dodgeball_Gravity = null;
-Handle gH_Cvar_LR_HotPotato_MaxTime = null;
-Handle gH_Cvar_LR_HotPotato_MinTime = null;
-Handle gH_Cvar_LR_HotPotato_Speed = null;
-Handle gH_Cvar_LR_NoScope_Sound = null;
-Handle gH_Cvar_LR_Sound = null;
-Handle gH_Cvar_LR_NoScope_Weapon = null;
-Handle gH_Cvar_LR_S4S_DoubleShot = null;
-Handle gH_Cvar_LR_GunToss_MarkerMode = null;
-Handle gH_Cvar_LR_GunToss_ShowMeter = null;
-Handle gH_Cvar_LR_Race_AirPoints = null;
-Handle gH_Cvar_LR_Race_NotifyCTs = null;
-Handle gH_Cvar_Announce_CT_FreeHit = null;
-Handle gH_Cvar_Announce_LR = null;
-Handle gH_Cvar_Announce_Rebel = null;
-Handle gH_Cvar_Announce_RebelDown = null;
-Handle gH_Cvar_Announce_Weapon_Attack = null;
-Handle gH_Cvar_Announce_HotPotato_Eqp = null;
-Handle gH_Cvar_Announce_Shot4Shot = null;
-Handle gH_Cvar_LR_NonContKiller_Action = null;
-Handle gH_Cvar_LR_Delay_Enable_Time = null;
-Handle gH_Cvar_LR_Damage = null;
-Handle gH_Cvar_LR_NoScope_Delay = null;
-Handle gH_Cvar_LR_ChickenFight_Rebel = null;
-Handle gH_Cvar_LR_HotPotato_Rebel = null;
-Handle gH_Cvar_LR_KnifeFight_Rebel = null;
-Handle gH_Cvar_LR_Rebel_MaxTs = null;
-Handle gH_Cvar_LR_Rebel_MinCTs = null;
-Handle gH_Cvar_LR_M4M_MagCapacity = null;
-Handle gH_Cvar_LR_KnifeFight_LowGrav = null;
-Handle gH_Cvar_LR_KnifeFight_HiSpeed = null;
-Handle gH_Cvar_LR_KnifeFight_Drunk = null;
-Handle gH_Cvar_LR_Beacon_Sound = null;
-Handle gH_Cvar_LR_AutoDisplay = null;
-Handle gH_Cvar_LR_BlockSuicide = null;
-Handle gH_Cvar_LR_VictorPoints = null;
-Handle gH_Cvar_LR_RestoreWeapon_T = null;
-Handle gH_Cvar_LR_RestoreWeapon_CT = null;
+ConVar gH_Cvar_LR_KnifeFight_On;
+ConVar gH_Cvar_LR_Shot4Shot_On;
+ConVar gH_Cvar_LR_GunToss_On;
+ConVar gH_Cvar_LR_ChickenFight_On;
+ConVar gH_Cvar_LR_HotPotato_On;
+ConVar gH_Cvar_LR_Dodgeball_On;
+ConVar gH_Cvar_LR_NoScope_On;
+ConVar gH_Cvar_LR_RockPaperScissors_On;
+ConVar gH_Cvar_LR_Rebel_On;
+ConVar gH_Cvar_LR_Mag4Mag_On;
+ConVar gH_Cvar_LR_Race_On;
+ConVar gH_Cvar_LR_RussianRoulette_On;
+ConVar gH_Cvar_LR_JumpContest_On;
+ConVar gH_Cvar_Announce_Delay_Enable;
+ConVar gH_Cvar_LR_HotPotato_Mode;
+ConVar gH_Cvar_MaxPrisonersToLR;
+ConVar gH_Cvar_RebelAction;
+ConVar gH_Cvar_RebelHandling;
+ConVar gH_Cvar_SendGlobalMsgs;
+ConVar gH_Cvar_ColorRebels;
+ConVar gH_Cvar_LR_Enable;
+ConVar gH_Cvar_LR_MenuTime;
+ConVar gH_Cvar_LR_KillTimeouts;
+ConVar gH_Cvar_ColorRebels_Red;
+ConVar gH_Cvar_ColorRebels_Blue;
+ConVar gH_Cvar_ColorRebels_Green;
+ConVar gH_Cvar_LR_Beacons;
+ConVar gH_Cvar_LR_HelpBeams;
+ConVar gH_Cvar_LR_HelpBeams_Distance;
+ConVar gH_Cvar_LR_Beacon_Interval;
+ConVar gH_Cvar_RebelOnImpact;
+ConVar gH_Cvar_LR_ChickenFight_Slay;
+ConVar gH_Cvar_LR_ChickenFight_C_Blue;
+ConVar gH_Cvar_LR_ChickenFight_C_Red;
+ConVar gH_Cvar_LR_ChickenFight_C_Green;
+ConVar gH_Cvar_LR_Dodgeball_CheatCheck;
+ConVar gH_Cvar_LR_Dodgeball_SpawnTime;
+ConVar gH_Cvar_LR_Dodgeball_Gravity;
+ConVar gH_Cvar_LR_HotPotato_MaxTime;
+ConVar gH_Cvar_LR_HotPotato_MinTime;
+ConVar gH_Cvar_LR_HotPotato_Speed;
+ConVar gH_Cvar_LR_NoScope_Sound;
+ConVar gH_Cvar_LR_Sound;
+ConVar gH_Cvar_LR_NoScope_Weapon;
+ConVar gH_Cvar_LR_S4S_DoubleShot;
+ConVar gH_Cvar_LR_GunToss_MarkerMode;
+ConVar gH_Cvar_LR_GunToss_ShowMeter;
+ConVar gH_Cvar_LR_Race_AirPoints;
+ConVar gH_Cvar_LR_Race_NotifyCTs;
+ConVar gH_Cvar_Announce_CT_FreeHit;
+ConVar gH_Cvar_Announce_LR;
+ConVar gH_Cvar_Announce_Rebel;
+ConVar gH_Cvar_Announce_RebelDown;
+ConVar gH_Cvar_Announce_Weapon_Attack;
+ConVar gH_Cvar_Announce_HotPotato_Eqp;
+ConVar gH_Cvar_Announce_Shot4Shot;
+ConVar gH_Cvar_LR_NonContKiller_Action;
+ConVar gH_Cvar_LR_Delay_Enable_Time;
+ConVar gH_Cvar_LR_Damage;
+ConVar gH_Cvar_LR_NoScope_Delay;
+ConVar gH_Cvar_LR_ChickenFight_Rebel;
+ConVar gH_Cvar_LR_HotPotato_Rebel;
+ConVar gH_Cvar_LR_KnifeFight_Rebel;
+ConVar gH_Cvar_LR_Rebel_MaxTs;
+ConVar gH_Cvar_LR_Rebel_MinCTs;
+ConVar gH_Cvar_LR_M4M_MagCapacity;
+ConVar gH_Cvar_LR_KnifeFight_LowGrav;
+ConVar gH_Cvar_LR_KnifeFight_HiSpeed;
+ConVar gH_Cvar_LR_KnifeFight_Drunk;
+ConVar gH_Cvar_LR_Beacon_Sound;
+ConVar gH_Cvar_LR_AutoDisplay;
+ConVar gH_Cvar_LR_BlockSuicide;
+ConVar gH_Cvar_LR_VictorPoints;
+ConVar gH_Cvar_LR_RestoreWeapon_T;
+ConVar gH_Cvar_LR_RestoreWeapon_CT;
 
 int g_iLastCT_FreeAttacker = -1;
-int gShadow_LR_KnifeFight_On = -1;
-int gShadow_LR_Shot4Shot_On = -1;
-int gShadow_LR_GunToss_On = -1;
-int gShadow_LR_ChickenFight_On = -1;
-int gShadow_LR_HotPotato_On = -1;
-int gShadow_LR_Dodgeball_On = -1;
-int gShadow_LR_NoScope_On = -1;
-int gShadow_LR_RockPaperScissors_On = -1;
-int gShadow_LR_Rebel_On = -1;
-int gShadow_LR_Mag4Mag_On = -1;
-int gShadow_LR_Race_On = -1;
-int gShadow_LR_RussianRoulette_On = -1;
-int gShadow_LR_JumpContest_On = -1;
-float gShadow_LR_Beacon_Interval = -1.0;
-bool gShadow_LR_ChickenFight_Slay = false;
-int gShadow_LR_ChickenFight_C_Blue = -1;
-int gShadow_LR_ChickenFight_C_Red = -1;
-int gShadow_LR_ChickenFight_C_Green = -1;
-bool gShadow_LR_Dodgeball_CheatCheck = false;
-float gShadow_LR_Dodgeball_SpawnTime = -1.0;
-float gShadow_LR_Dodgeball_Gravity = -1.0;
-int gShadow_RebelOnImpact = -1;
-int gShadow_ColorRebels_Red = -1;
-int gShadow_ColorRebels_Blue = -1;
-int gShadow_ColorRebels_Green = -1;
-int gShadow_LR_HotPotato_Mode = -1;
-int gShadow_MaxPrisonersToLR = -1;
-int gShadow_RebelAction = -1;
-int gShadow_RebelHandling = -1;
-int gShadow_SendGlobalMsgs = -1;
-int gShadow_ColorRebels = -1;
-bool gShadow_LR_Enable = false;
-int gShadow_LR_MenuTime = 0;
-bool gShadow_LR_AutoDisplay = false;
-bool gShadow_LR_Beacons = false;
-bool gShadow_LR_HelpBeams = false;
-float gShadow_LR_HelpBeams_Distance = -1.0;
-float gShadow_LR_HotPotato_MaxTime = -1.0;
-float gShadow_LR_HotPotato_MinTime = -1.0;
-float gShadow_LR_HotPotato_Speed = -1.0;
-bool gShadow_LR_S4S_DoubleShot;
-bool gShadow_LR_NonContKiller_Action;
-int gShadow_LR_GunToss_MarkerMode = -1;
-int gShadow_LR_GunToss_ShowMeter = -1;
-bool gShadow_LR_Race_AirPoints = false;
-bool gShadow_LR_Race_NotifyCTs = false;
-int gShadow_Announce_CT_FreeHit = 0;
-bool gShadow_Announce_LR = false;
-bool gShadow_Announce_Rebel = false;
-bool gShadow_Announce_RebelDown = false;
-bool gShadow_Announce_HotPotato_Eqp = false;
-bool gShadow_Announce_Weapon_Attack = false;
-bool gShadow_Announce_Shot4Shot = false;
-char gShadow_LR_NoScope_Sound[PLATFORM_MAX_PATH];
-char gShadow_LR_Sound[PLATFORM_MAX_PATH];
-int gShadow_LR_NoScope_Weapon = -1;
-bool gShadow_Announce_Delay_Enable = false;
-float gShadow_LR_Delay_Enable_Time = 0.0;
 bool g_bPushedToMenu = false;
-bool gShadow_LR_Damage = false;
-int gShadow_LR_NoScope_Delay = -1;
-int gShadow_LR_ChickenFight_Rebel = -1;
-int gShadow_LR_HotPotato_Rebel = -1;
-int gShadow_LR_KnifeFight_Rebel = -1;
-int gShadow_LR_Rebel_MaxTs = -1;
-int gShadow_LR_Rebel_MinCTs = -1;
-int gShadow_LR_M4M_MagCapacity = -1;
-float gShadow_LR_KnifeFight_LowGrav = -1.0;
-float gShadow_LR_KnifeFight_HiSpeed = -1.0;
-int gShadow_LR_KnifeFight_Drunk = -1;
-char gShadow_LR_Beacon_Sound[PLATFORM_MAX_PATH];
-bool gShadow_LR_KillTimeouts = false;
-bool gShadow_LR_BlockSuicide = false;
-int gShadow_LR_VictorPoints = -1;
-int gShadow_LR_RestoreWeapon_T = -1;
-int gShadow_LR_RestoreWeapon_CT = -1;
 
 // Autostart
 LastRequest g_selection[MAXPLAYERS + 1];
@@ -432,160 +355,83 @@ void LastRequest_OnPluginStart()
 	
 	// Register cvars
 	gH_Cvar_LR_Enable = CreateConVar("sm_hosties_lr", "1", "Enable or disable Last Requests (the !lr command): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Enable = true;
 	gH_Cvar_LR_MenuTime = CreateConVar("sm_hosties_lr_menutime", "0", "Sets the time the LR menu is displayed (in seconds)", 0, true, 0.0);
-	gShadow_LR_MenuTime = 0;
 	gH_Cvar_LR_KillTimeouts = CreateConVar("sm_hosties_lr_killtimeouts", "0", "Kills Ts who timeout the LR menu and controls whether the exit button is displayed: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_KillTimeouts = false;
 	gH_Cvar_LR_KnifeFight_On = CreateConVar("sm_hosties_lr_kf_enable", "1", "Enable LR Knife Fight: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_KnifeFight_On = true;
 	gH_Cvar_LR_Shot4Shot_On = CreateConVar("sm_hosties_lr_s4s_enable", "1", "Enable LR Shot4Shot: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Shot4Shot_On = true;
 	gH_Cvar_LR_GunToss_On = CreateConVar("sm_hosties_lr_gt_enable", "1", "Enable LR Gun Toss: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_GunToss_On = true;
 	gH_Cvar_LR_ChickenFight_On = CreateConVar("sm_hosties_lr_cf_enable", "1", "Enable LR Chicken Fight: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_ChickenFight_On = true;
 	gH_Cvar_LR_HotPotato_On = CreateConVar("sm_hosties_lr_hp_enable", "1", "Enable LR Hot Potato: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_HotPotato_On = true;
 	gH_Cvar_LR_Dodgeball_On = CreateConVar("sm_hosties_lr_db_enable", "1", "Enable LR Dodgeball: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Dodgeball_On = true;
 	gH_Cvar_LR_NoScope_On = CreateConVar("sm_hosties_lr_ns_enable", "1", "Enable LR No Scope Battle: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_NoScope_On = true;
 	gH_Cvar_LR_RockPaperScissors_On = CreateConVar("sm_hosties_lr_rps_enable", "1", "Enable LR Rock Paper Scissors: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_RockPaperScissors_On = true;
 	gH_Cvar_LR_Rebel_On = CreateConVar("sm_hosties_lr_rebel_on", "1", "Enables the LR Rebel: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Rebel_On = true;
 	gH_Cvar_LR_Mag4Mag_On = CreateConVar("sm_hosties_lr_mag4mag_on", "1", "Enables the LR Magazine4Magazine: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Mag4Mag_On = true;
 	gH_Cvar_LR_Race_On = CreateConVar("sm_hosties_lr_race_on", "1", "Enables the LR Race: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Race_On = true;
 	gH_Cvar_LR_RussianRoulette_On = CreateConVar("sm_hosties_lr_russianroulette_on", "1", "Enables the LR Russian Roulette: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_RussianRoulette_On = true;
 	gH_Cvar_LR_JumpContest_On = CreateConVar("sm_hosties_lr_jumpcontest_on", "1", "Enables the LR Jumping Contest: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);	
-	gShadow_LR_JumpContest_On = true;
 
 	gH_Cvar_LR_HotPotato_Mode = CreateConVar("sm_hosties_lr_hp_teleport", "2", "Teleport CT to T on hot potato contest start: 0 - disable, 1 - enable, 2 - enable and freeze", 0, true, 0.0, true, 2.0);
-	gShadow_LR_HotPotato_Mode = 2;
 	gH_Cvar_SendGlobalMsgs = CreateConVar("sm_hosties_lr_send_global_msgs", "0", "Specifies if non-death related LR messages are sent to everyone or just the active participants in that LR. 0: participants, 1: everyone", 0, true, 0.0, true, 1.0);
-	gShadow_SendGlobalMsgs = 0;
 	gH_Cvar_MaxPrisonersToLR = CreateConVar("sm_hosties_lr_ts_max", "2", "The maximum number of terrorists left to enable LR: 0 - LR is always enabled, >0 - maximum number of Ts", 0, true, 0.0, true, 63.0);
-	gShadow_MaxPrisonersToLR = 1;
 	gH_Cvar_RebelAction = CreateConVar("sm_hosties_lr_rebel_action", "2", "Decides what to do with those who rebel/interfere during an LR. 1 - Abort, 2 - Slay.", 0, true, 1.0, true, 2.0);
-	gShadow_RebelAction = 2;
 	gH_Cvar_RebelHandling = CreateConVar("sm_hosties_lr_rebel_mode", "1", "LR-mode for rebelling terrorists: 0 - Rebelling Ts can never have a LR, 1 - Rebelling Ts must let the CT decide if a LR is OK, 2 - Rebelling Ts can have a LR just like other Ts", 0, true, 0.0);
-	gShadow_RebelHandling = 1;
 	gH_Cvar_RebelOnImpact = CreateConVar("sm_hosties_lr_rebel_impact", "0", "Sets terrorists to rebels for firing a bullet. 0 - Disabled, 1 - Enabled.", 0, true, 0.0, true, 1.0);
-	gShadow_RebelOnImpact = 0;
 	gH_Cvar_ColorRebels = CreateConVar("sm_hosties_rebel_color", "0", "Turns on coloring rebels", 0, true, 0.0, true, 1.0);
-	gShadow_ColorRebels = 0;
 	gH_Cvar_ColorRebels_Red = CreateConVar("sm_hosties_rebel_red", "255", "What color to turn a rebel into (set R, G and B values to 255 to disable) (Rgb): x - red value", 0, true, 0.0, true, 255.0);
-	gShadow_ColorRebels_Red = 255;
 	gH_Cvar_ColorRebels_Green = CreateConVar("sm_hosties_rebel_green", "0", "What color to turn a rebel into (rGb): x - green value", 0, true, 0.0, true, 255.0);
-	gShadow_ColorRebels_Green = 0;
 	gH_Cvar_ColorRebels_Blue = CreateConVar("sm_hosties_rebel_blue", "0", "What color to turn a rebel into (rgB): x - blue value", 0, true, 0.0, true, 255.0);
-	gShadow_ColorRebels_Blue = 0;
 	gH_Cvar_LR_Beacons = CreateConVar("sm_hosties_lr_beacon", "1", "Beacon players on LR or not: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Beacons = true;
 	gH_Cvar_LR_HelpBeams = CreateConVar("sm_hosties_lr_beams", "1", "Displays connecting beams between LR contestants: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_HelpBeams = true;
 	gH_Cvar_LR_HelpBeams_Distance = CreateConVar("sm_hosties_lr_beams_distance", "0.0", "Controls how close LR partners must be before the connecting beams will disappear: 0 - always on, >0 the distance in game units", 0, true, 0.0);
-	gShadow_LR_HelpBeams_Distance = 0.0;
 	gH_Cvar_LR_Beacon_Interval = CreateConVar("sm_hosties_lr_beacon_interval", "1.0", "The interval in seconds of which the beacon 'beeps' on LR", 0, true, 0.1);
-	gShadow_LR_Beacon_Interval = 1.0;
 	gH_Cvar_LR_ChickenFight_Slay = CreateConVar("sm_hosties_lr_cf_slay", "1", "Slay the loser of a Chicken Fight instantly? 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_ChickenFight_Slay = true;
 	gH_Cvar_LR_ChickenFight_C_Blue = CreateConVar("sm_hosties_lr_cf_loser_blue", "0", "What color to turn the loser of a chicken fight into (rgB): x - blue value", 0, true, 0.0, true, 255.0);
-	gShadow_LR_ChickenFight_C_Blue = 0;
 	gH_Cvar_LR_ChickenFight_C_Green = CreateConVar("sm_hosties_lr_cf_loser_green", "255", "What color to turn the loser of a chicken fight into (rGb): x - green value", 0, true, 0.0, true, 255.0);
-	gShadow_LR_ChickenFight_C_Green = 255;
 	gH_Cvar_LR_ChickenFight_C_Red = CreateConVar("sm_hosties_lr_cf_loser_red", "255", "What color to turn the loser of a chicken fight into (only if sm_hosties_lr_cf_slay == 0, set R, G and B values to 255 to disable) (Rgb): x - red value", 0, true, 0.0, true, 255.0);
-	gShadow_LR_ChickenFight_C_Red = 255;
 	gH_Cvar_LR_Dodgeball_CheatCheck = CreateConVar("sm_hosties_lr_db_cheatcheck", "1", "Enable health-checker in LR Dodgeball to prevent contestant cheating (healing themselves): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Dodgeball_CheatCheck = true;
 	gH_Cvar_LR_Dodgeball_SpawnTime = CreateConVar("sm_hosties_lr_db_flash_duration", "1.4", "The amount of time after a thrown flash before a new flash is given to a contestant: float value - delay in seconds", 0, true, 0.7, true, 6.0);
-	gShadow_LR_Dodgeball_SpawnTime = 1.4;
 	gH_Cvar_LR_Dodgeball_Gravity = CreateConVar("sm_hosties_lr_db_gravity", "0.6", "What gravity multiplier the dodgeball contestants will get: <1.0 - less/lower, >1.0 - more/higher", 0, true, 0.1, true, 2.0);
-	gShadow_LR_Dodgeball_Gravity = 0.6;
 	gH_Cvar_LR_HotPotato_MaxTime = CreateConVar("sm_hosties_lr_hp_maxtime", "20.0", "Maximum time in seconds the Hot Potato contest will last for (time is randomized): float value - time", 0, true, 8.0, true, 120.0);
-	gShadow_LR_HotPotato_MaxTime = 20.0;
 	gH_Cvar_LR_HotPotato_MinTime = CreateConVar("sm_hosties_lr_hp_mintime", "10.0", "Minimum time in seconds the Hot Potato contest will last for (time is randomized): float value - time", 0, true, 0.0, true, 45.0);
-	gShadow_LR_HotPotato_MinTime = 10.0;
 	gH_Cvar_LR_HotPotato_Speed = CreateConVar("sm_hosties_lr_hp_speed_multipl", "1.5", "What speed multiplier a hot potato contestant who has the deagle is gonna get: <1.0 - slower, >1.0 - faster", 0, true, 0.8, true, 3.0);
-	gShadow_LR_HotPotato_Speed = 1.5;
 	gH_Cvar_LR_S4S_DoubleShot = CreateConVar("sm_hosties_lr_s4s_dblsht_action", "1", "What to do with someone who fires 2 shots in a row in Shot4Shot: 0 - nothing (ignore completely), 1 - Follow rebel punishment cvars", 0, true, 0.0, true, 1.0);
-	gShadow_LR_S4S_DoubleShot = false;
 	gH_Cvar_LR_NoScope_Sound = CreateConVar("sm_hosties_noscope_sound", "sm_hosties/noscopestart1.mp3", "What sound to play when a No Scope Battle starts, relative to the sound-folder: -1 - disable, path - path to sound file", 0);
-	Format(gShadow_LR_NoScope_Sound, sizeof(gShadow_LR_NoScope_Sound ), "sm_hosties/noscopestart1.mp3");
 	gH_Cvar_LR_Sound = CreateConVar("sm_hosties_lr_sound", "sm_hosties/lr1.mp3", "What sound to play when LR gets available, relative to the sound-folder (also requires sm_hosties_announce_lr to be 1): -1 - disable, path - path to sound file", 0);
-	Format(gShadow_LR_Sound, sizeof(gShadow_LR_Sound), "sm_hosties/lr1.mp3");
 	gH_Cvar_LR_Beacon_Sound = CreateConVar("sm_hosties_beacon_sound", "buttons/blip1.wav", "What sound to play each second a beacon is 'ping'ed.", 0);
-	Format(gShadow_LR_Beacon_Sound, sizeof(gShadow_LR_Beacon_Sound), "buttons/blip1.wav");
 	gH_Cvar_LR_NoScope_Weapon = CreateConVar("sm_hosties_lr_ns_weapon", "2", "Weapon to use in a No Scope Battle: 0 - AWP, 1 - scout, 2 - let the terrorist choose, 3 - SG550, 4 - G3SG1", 0, true, 0.0, true, 2.0);
-	gShadow_LR_NoScope_Weapon = 2;
 	gH_Cvar_LR_NonContKiller_Action = CreateConVar("sm_hosties_lr_p_killed_action", "1", "What to do when a LR-player gets killed by a player not in LR during LR: 0 - just abort LR, 1 - abort LR and slay the attacker", 0, true, 0.0, true, 1.0);
-	gShadow_LR_NonContKiller_Action = true;
 	gH_Cvar_LR_GunToss_MarkerMode = CreateConVar("sm_hosties_lr_gt_markers", "0", "Deagle marking (requires sm_hosties_lr_gt_mode 1): 0 - markers straight up where the deagles land, 1 - markers starting where the deagle was dropped ending at the deagle landing point", 0);
-	gShadow_LR_GunToss_MarkerMode = 0;
 	gH_Cvar_LR_GunToss_ShowMeter = CreateConVar("sm_hosties_lr_gt_meter", "1", "Displays a distance meter: 0 - do not display, 1 - display", 0, true, 0.0, true, 1.0);
-	gShadow_LR_GunToss_ShowMeter = 1;
 	gH_Cvar_LR_Delay_Enable_Time = CreateConVar("sm_hosties_lr_enable_delay", "0.0", "Delay in seconds before a last request can be started: 0.0 - instantly, >0.0 - (float value) delay in seconds", 0, true, 0.0);
-	gShadow_LR_Delay_Enable_Time = 0.0;
 	gH_Cvar_LR_Damage = CreateConVar("sm_hosties_lr_damage", "0", "Enables that players can not attack players in LR and players in LR can not attack players outside LR: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Damage = false; 	
 	gH_Cvar_LR_NoScope_Delay = CreateConVar("sm_hosties_lr_ns_delay", "3", "Delay in seconds before a No Scope Battle begins (to prepare the contestants...)", 0, true, 0.0);
-	gShadow_LR_NoScope_Delay = 3;
 	gH_Cvar_LR_ChickenFight_Rebel = CreateConVar("sm_hosties_lr_cf_cheat_action", "1", "What to do with a chicken fighter who attacks the other player with another weapon than knife: 0 - abort LR, 1 - slay player", 0, true, 0.0, true, 1.0);
-	gShadow_LR_ChickenFight_Rebel = 1;
 	gH_Cvar_LR_HotPotato_Rebel = CreateConVar("sm_hosties_lr_hp_cheat_action", "1", "What to do with a hot potato contestant who attacks the other player: 0 - abort LR, 1 - slay player", 0, true, 0.0, true, 1.0);
-	gShadow_LR_HotPotato_Rebel = 1;
 	gH_Cvar_LR_KnifeFight_Rebel = CreateConVar("sm_hosties_lr_kf_cheat_action", "1", "What to do with a knife fighter who attacks the other player with another weapon than knife: 0 - abort LR, 1 - slay player", 0, true, 0.0, true, 1.0);
-	gShadow_LR_KnifeFight_Rebel = 1;
 	gH_Cvar_LR_Race_AirPoints = CreateConVar("sm_hosties_lr_race_airpoints", "0", "Allow prisoners to set race points in the air.", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Race_AirPoints = false;
 	gH_Cvar_LR_Debug_Enabled = CreateConVar("sm_hosties_debug_enabled", "0", "Allow prisoners to set race points in the air.", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Debug_Enabled = false;
 	gH_Cvar_LR_Race_NotifyCTs = CreateConVar("sm_hosties_lr_race_tell_cts", "1", "Tells all CTs when a T has selected the race option from the LR menu", 0, true, 0.0, true, 1.0);
-	gShadow_LR_Race_NotifyCTs = false;
 	gH_Cvar_LR_Rebel_MaxTs = CreateConVar("sm_hosties_lr_rebel_ts", "1", "If the Rebel LR option is enabled, specifies the maximum number of alive terrorists needed for the option to appear in the LR menu.", 0, true, 1.0);
-	gShadow_LR_Rebel_MaxTs = 1;
 	gH_Cvar_LR_Rebel_MinCTs = CreateConVar("sm_hosties_lr_rebel_cts", "1", "If the Rebel LR option is enabled, specifies how minimum number of alive counter-terrorists needed for the option to appear in the LR menu.", 0, true, 1.0);
-	gShadow_LR_Rebel_MinCTs = 1;
 	gH_Cvar_LR_M4M_MagCapacity = CreateConVar("sm_hosties_lr_m4m_capacity", "7", "The number of bullets in each magazine given to Mag4Mag LR contestants", 0, true, 2.0);
-	gShadow_LR_M4M_MagCapacity = 7;
 	gH_Cvar_LR_KnifeFight_LowGrav = CreateConVar("sm_hosties_lr_kf_gravity", "0.6", "The multiplier used for the low-gravity knife fight.", 0, true, 0.0, true, 1.0);
-	gShadow_LR_KnifeFight_LowGrav = 0.6;
 	gH_Cvar_LR_KnifeFight_HiSpeed = CreateConVar("sm_hosties_lr_kf_speed", "2.2", "The multiplier used for the high-speed knife fight.", 0, true, 1.1);
-	gShadow_LR_KnifeFight_HiSpeed = 2.2;
 	gH_Cvar_LR_KnifeFight_Drunk = CreateConVar("sm_hosties_lr_kf_drunk", "4", "The multiplier used for how drunk the player will be during the drunken boxing knife fight.", 0, true, 0.0);
-	gShadow_LR_KnifeFight_Drunk = 4;
 	gH_Cvar_Announce_CT_FreeHit = CreateConVar("sm_hosties_announce_attack", "1", "Enable or disable announcements when a CT attacks a non-rebelling T: 0 - disable, 1 - console, 2 - chat, 3 - both", 0, true, 0.0, true, 3.0);
-	gShadow_Announce_CT_FreeHit = 1;
 	gH_Cvar_Announce_LR = CreateConVar("sm_hosties_announce_lr", "1", "Enable or disable chat announcements when Last Requests starts to be available: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_Announce_LR = true;
 	gH_Cvar_Announce_Rebel = CreateConVar("sm_hosties_announce_rebel", "0", "Enable or disable chat announcements when a terrorist becomes a rebel: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_Announce_Rebel = false;
 	gH_Cvar_Announce_RebelDown = CreateConVar("sm_hosties_announce_rebel_down", "0", "Enable or disable chat announcements when a rebel is killed: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_Announce_RebelDown = false;
 	gH_Cvar_Announce_Weapon_Attack = CreateConVar("sm_hosties_announce_wpn_attack", "0", "Enable or disable an announcement telling that a non-rebelling T has a weapon when he gets attacked by a CT (also requires sm_hosties_announce_attack 1): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_Announce_Weapon_Attack = false;
 	gH_Cvar_Announce_Shot4Shot = CreateConVar("sm_hosties_lr_s4s_shot_taken", "1", "Enable announcements in Shot4Shot or Mag4Mag when a contestant empties their gun: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_Announce_Shot4Shot = false;
 	gH_Cvar_Announce_Delay_Enable = CreateConVar("sm_hosties_announce_lr_delay", "1", "Enable or disable chat announcements to tell that last request delaying is activated and how long the delay is: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_Announce_Delay_Enable = false;
 	gH_Cvar_Announce_HotPotato_Eqp = CreateConVar("sm_hosties_lr_hp_pickupannounce", "0", "Enable announcement when a Hot Potato contestant picks up the hot potato: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_Announce_HotPotato_Eqp = false;
 	gH_Cvar_LR_AutoDisplay = CreateConVar("sm_hosties_lr_autodisplay", "0", "Automatically display the LR menu to non-rebelers when they become elgible for LR: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_AutoDisplay = false;
 	gH_Cvar_LR_BlockSuicide = CreateConVar("sm_hosties_lr_blocksuicide", "0", "Blocks LR participants from commiting suicide to avoid deaths: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_BlockSuicide = false;
 	gH_Cvar_LR_VictorPoints = CreateConVar("sm_hosties_lr_victorpoints", "1", "Amount of frags to reward victor in an LR where other player automatically dies", 0, true, 0.0);
-	gShadow_LR_VictorPoints = 1;
 	gH_Cvar_LR_RestoreWeapon_T = CreateConVar("sm_hosties_lr_restoreweapon_t", "1", "Restore weapons after LR for T players: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_RestoreWeapon_T = 1;
 	gH_Cvar_LR_RestoreWeapon_CT = CreateConVar("sm_hosties_lr_restoreweapon_ct", "1", "Restore weapons after LR for CT players: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_LR_RestoreWeapon_CT = 1;
 	
-	// Listen for changes
 	HookConVarChange(gH_Cvar_LR_KnifeFight_On, ConVarChanged_LastRequest);
 	HookConVarChange(gH_Cvar_LR_Shot4Shot_On, ConVarChanged_LastRequest);
 	HookConVarChange(gH_Cvar_LR_ChickenFight_On, ConVarChanged_LastRequest);
@@ -599,70 +445,6 @@ void LastRequest_OnPluginStart()
 	HookConVarChange(gH_Cvar_LR_Race_On, ConVarChanged_LastRequest);
 	HookConVarChange(gH_Cvar_LR_RussianRoulette_On, ConVarChanged_LastRequest);
 	HookConVarChange(gH_Cvar_LR_JumpContest_On, ConVarChanged_LastRequest);
-	
-	HookConVarChange(gH_Cvar_LR_Enable, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_MenuTime, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_KillTimeouts, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_HotPotato_Mode, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_SendGlobalMsgs, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_MaxPrisonersToLR, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_RebelAction, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_RebelHandling, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_ColorRebels, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Beacons, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_HelpBeams, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_HelpBeams_Distance, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Beacon_Interval, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_RebelOnImpact, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_ColorRebels_Blue, ConVarChanged_Setting);	
-	HookConVarChange(gH_Cvar_ColorRebels_Green, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_ColorRebels_Red, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_ChickenFight_C_Blue, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_ChickenFight_C_Green, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_ChickenFight_C_Red, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_ChickenFight_Slay, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Dodgeball_CheatCheck, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Dodgeball_Gravity, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Dodgeball_SpawnTime, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_HotPotato_MaxTime, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_HotPotato_MinTime, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_HotPotato_Speed, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_NoScope_Sound, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Sound, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Beacon_Sound, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_NoScope_Weapon, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_NonContKiller_Action, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_S4S_DoubleShot, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_GunToss_MarkerMode, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_GunToss_ShowMeter, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Delay_Enable_Time, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Damage, ConVarChanged_Setting); 
-	HookConVarChange(gH_Cvar_LR_NoScope_Delay, ConVarChanged_Setting); 
-	HookConVarChange(gH_Cvar_LR_KnifeFight_Rebel, ConVarChanged_Setting); 
-	HookConVarChange(gH_Cvar_LR_ChickenFight_Rebel, ConVarChanged_Setting); 
-	HookConVarChange(gH_Cvar_LR_HotPotato_Rebel, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Race_AirPoints, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Debug_Enabled, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Race_NotifyCTs, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Rebel_MinCTs, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_Rebel_MaxTs, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_M4M_MagCapacity, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_KnifeFight_LowGrav, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_KnifeFight_HiSpeed, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_KnifeFight_Drunk, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_Announce_CT_FreeHit, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_Announce_LR, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_Announce_Rebel, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_Announce_RebelDown, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_Announce_Weapon_Attack, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_Announce_Shot4Shot, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_Announce_Delay_Enable, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_Announce_HotPotato_Eqp, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_AutoDisplay, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_BlockSuicide, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_VictorPoints, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_RestoreWeapon_T, ConVarChanged_Setting);
-	HookConVarChange(gH_Cvar_LR_RestoreWeapon_CT, ConVarChanged_Setting);
 	
 	// Account for late loading
 	for (int idx = 1; idx <= MaxClients ; idx++)
@@ -821,7 +603,7 @@ public int Native_LR_Initialize(Handle h_Plugin, int iNumParameters)
 				gH_BuildLR[LR_Player_Prisoner] = null;
 				
 				// Beacon players
-				if (gShadow_LR_Beacons)
+				if (gH_Cvar_LR_Beacons.BoolValue)
 				{
 					AddBeacon(LR_Player_Prisoner);
 					AddBeacon(g_LR_Player_Guard[LR_Player_Prisoner]);
@@ -916,9 +698,9 @@ public int Native_IsClientInLR(Handle h_Plugin, int iNumParameters)
 
 void MarkRebel(int client, int victim)
 {
-	if (gShadow_Announce_Rebel && IsClientInGame(client))
+	if (gH_Cvar_Announce_Rebel.BoolValue && IsClientInGame(client))
 	{
-		if (gShadow_SendGlobalMsgs)
+		if (gH_Cvar_SendGlobalMsgs.BoolValue)
 		{
 			CPrintToChatAll("%s %t", ChatBanner, "New Rebel", client);
 		}
@@ -931,10 +713,9 @@ void MarkRebel(int client, int victim)
 			}
 		}
 	}
-	if (gShadow_ColorRebels)
+	if (gH_Cvar_ColorRebels.BoolValue)
 	{
-		SetEntityRenderColor(client, gShadow_ColorRebels_Red, gShadow_ColorRebels_Green, 
-		gShadow_ColorRebels_Blue, 255);
+		SetEntityRenderColor(client, gH_Cvar_ColorRebels_Red.IntValue, gH_Cvar_ColorRebels_Green.IntValue, gH_Cvar_ColorRebels_Blue.IntValue, 255);
 	}
 }
 
@@ -981,14 +762,14 @@ public Action LastRequest_RoundStart(Event event, const char[] name, bool dontBr
 	g_bRoundInProgress = true;
 	
 	// roundstart done, enable LR if there should be no LR delay (credits to Caza for this :p)
-	if (gShadow_LR_Delay_Enable_Time > 0.0)
+	if (gH_Cvar_LR_Delay_Enable_Time.FloatValue > 0.0)
 	{
 		g_bIsLRAvailable = false;	
-		g_DelayLREnableTimer = CreateTimer(gShadow_LR_Delay_Enable_Time, Timer_EnableLR, _, TIMER_FLAG_NO_MAPCHANGE);
+		g_DelayLREnableTimer = CreateTimer(gH_Cvar_LR_Delay_Enable_Time.FloatValue, Timer_EnableLR, _, TIMER_FLAG_NO_MAPCHANGE);
 
-		if (gShadow_Announce_Delay_Enable)
+		if (gH_Cvar_Announce_Delay_Enable.BoolValue)
 		{
-			CPrintToChatAll("%s %t", ChatBanner, "LR Delay Announcement", RoundToNearest(gShadow_LR_Delay_Enable_Time));
+			CPrintToChatAll("%s %t", ChatBanner, "LR Delay Announcement", RoundToNearest(gH_Cvar_LR_Delay_Enable_Time.FloatValue));
 		}
 	}
 	else
@@ -1016,7 +797,7 @@ public Action Timer_EnableLR(Handle timer)
 		UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);	
 	
 		// Check if we should send OnAvailableLR forward now
-		if (Ts <= gShadow_MaxPrisonersToLR && (NumCTsAvailable > 0) && (Ts > 0))
+		if (Ts <= gH_Cvar_MaxPrisonersToLR.IntValue && (NumCTsAvailable > 0) && (Ts > 0))
 		{
 			// do not announce later
 			g_bAnnouncedThisRound = true;
@@ -1095,7 +876,7 @@ public Action LastRequest_PlayerDeath(Event event, const char[] name, bool dontB
 				if (attacker != LR_Player_Prisoner && attacker != LR_Player_Guard \
 					&& attacker && (type != LR_Rebel))
 				{
-					if (!gShadow_LR_NonContKiller_Action)
+					if (!gH_Cvar_LR_NonContKiller_Action)
 					{
 						CPrintToChatAll("%s %t", ChatBanner, "Non LR Kill LR Abort", attacker, victim);
 					}
@@ -1116,9 +897,9 @@ public Action LastRequest_PlayerDeath(Event event, const char[] name, bool dontB
 	int Ts, CTs, NumCTsAvailable;
 	UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);
 	
-	if ((Ts > 0) && gShadow_Announce_RebelDown && g_bIsARebel[victim] && attacker && (attacker != victim))
+	if ((Ts > 0) && gH_Cvar_Announce_RebelDown && g_bIsARebel[victim] && attacker && (attacker != victim))
 	{
-		if (gShadow_SendGlobalMsgs)
+		if (gH_Cvar_SendGlobalMsgs.BoolValue)
 		{
 			CPrintToChatAll("%s %t", ChatBanner, "Rebel Kill", attacker, victim);
 		}
@@ -1129,7 +910,7 @@ public Action LastRequest_PlayerDeath(Event event, const char[] name, bool dontB
 		}
 	}
 	
-	if (gShadow_LR_AutoDisplay && gShadow_LR_Enable && (Ts > 0) && (NumCTsAvailable > 0) && (Ts <= gShadow_MaxPrisonersToLR))
+	if (gH_Cvar_LR_AutoDisplay.BoolValue && gH_Cvar_LR_Enable.BoolValue && (Ts > 0) && (NumCTsAvailable > 0) && (Ts <= gH_Cvar_MaxPrisonersToLR.IntValue))
 	{
 		for (int idx = 1; idx <= MaxClients; idx++)
 		{
@@ -1140,23 +921,25 @@ public Action LastRequest_PlayerDeath(Event event, const char[] name, bool dontB
 		}
 	}
 	
-	if (!g_bAnnouncedThisRound && gShadow_LR_Enable)
+	if (!g_bAnnouncedThisRound && gH_Cvar_LR_Enable.BoolValue)
 	{
-		if ((Ts == gShadow_MaxPrisonersToLR) && (NumCTsAvailable > 0) && (Ts > 0))
+		if ((Ts == gH_Cvar_MaxPrisonersToLR.IntValue) && (NumCTsAvailable > 0) && (Ts > 0))
 		{
 			Call_StartForward(gH_Frwd_LR_Available);
 			// announced = yes
-			Call_PushCell(gShadow_Announce_LR);
+			Call_PushCell(gH_Cvar_Announce_LR.BoolValue);
 			int ignore;
 			Call_Finish(view_as<int>(ignore));
 		
-			if (gShadow_Announce_LR)
+			if (gH_Cvar_Announce_LR.BoolValue)
 			{
 				CPrintToChatAll("%s %t", ChatBanner, "LR Available");
+				char buffer[PLATFORM_MAX_PATH];
+				gH_Cvar_LR_Sound.GetString(buffer, sizeof(buffer));
 				
-				if ((strlen(gShadow_LR_Sound) > 0) && !StrEqual(gShadow_LR_Sound, "-1"))
+				if ((strlen(buffer) > 0) && !StrEqual(buffer, "-1"))
 				{
-					EmitSoundToAllAny(gShadow_LR_Sound);
+					EmitSoundToAllAny(buffer);
 				}
 			}
 			
@@ -1192,9 +975,9 @@ public Action LastRequest_PlayerHurt(Event event, const char[] name, bool dontBr
 				if (!g_bIsARebel[attacker] && (GetClientTeam(attacker) == CS_TEAM_T))
 				{
 					g_bIsARebel[attacker] = true;
-					if (gShadow_Announce_Rebel && IsClientInGame(attacker))
+					if (gH_Cvar_Announce_Rebel.IntValue && IsClientInGame(attacker))
 					{
-						if (gShadow_SendGlobalMsgs)
+						if (gH_Cvar_SendGlobalMsgs.BoolValue)
 						{
 							CPrintToChatAll("%s %t", ChatBanner, "New Rebel", attacker);
 						}
@@ -1210,7 +993,7 @@ public Action LastRequest_PlayerHurt(Event event, const char[] name, bool dontBr
 			else if (target != LR_Player_Prisoner && target != LR_Player_Guard && \
 				(attacker == LR_Player_Prisoner || attacker == LR_Player_Guard))
 			{
-				if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for attacking someone outside of the LR.", attacker);
+				if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for attacking someone outside of the LR.", attacker);
 				DecideRebelsFate(attacker, idx, target);
 			}
 			
@@ -1222,7 +1005,7 @@ public Action LastRequest_PlayerHurt(Event event, const char[] name, bool dontBr
 				GetEventString(event, "weapon", weapon, 32);
 				bool bIsItAKnife = (StrContains(weapon, "knife") == -1 ? false : true);
 				
-				RightKnifeAntiCheat(attacker, idx);
+				if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
 				
 				switch (type)
 				{
@@ -1230,7 +1013,7 @@ public Action LastRequest_PlayerHurt(Event event, const char[] name, bool dontBr
 					{
 						if (!bIsItAKnife)
 						{
-							if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using other weapon in KnifeFight.", attacker);
+							if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using other weapon in KnifeFight.", attacker);
 							DecideRebelsFate(attacker, idx, target);
 						}
 					}
@@ -1238,13 +1021,13 @@ public Action LastRequest_PlayerHurt(Event event, const char[] name, bool dontBr
 					{
 						if (bIsItAKnife)
 						{
-							if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using Knife in NoScope.", attacker);
+							if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using Knife in NoScope. - 1239", attacker);
 							DecideRebelsFate(attacker, idx, target);
 						}
 					}
 					case LR_HotPotato:
 					{
-						if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for attacking the enemy in HotPotato.", attacker);
+						if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for attacking the enemy in HotPotato.", attacker);
 						DecideRebelsFate(attacker, idx, target);
 					}
 				}		
@@ -1266,11 +1049,11 @@ public Action LastRequest_PlayerHurt(Event event, const char[] name, bool dontBr
 	{
 		bool bPrisonerHasGun = PlayerHasGun(target);
 		
-		if (gShadow_Announce_CT_FreeHit && target != g_iLastCT_FreeAttacker)
+		if (gH_Cvar_Announce_CT_FreeHit.IntValue && target != g_iLastCT_FreeAttacker)
 		{
 			g_iLastCT_FreeAttacker = target;
 			
-			if (gShadow_Announce_Weapon_Attack && bPrisonerHasGun)
+			if (gH_Cvar_Announce_Weapon_Attack.BoolValue && bPrisonerHasGun)
 			{
 				if (IsClientInGame(target) && IsPlayerAlive(target))
 				{
@@ -1278,11 +1061,11 @@ public Action LastRequest_PlayerHurt(Event event, const char[] name, bool dontBr
 					{
 						if (IsClientInGame(idx))
 						{
-							if(gShadow_Announce_CT_FreeHit != 2)
+							if(gH_Cvar_Announce_CT_FreeHit.IntValue != 2)
 							{
 								PrintToConsole(idx, "[Hosties] %t", "CT Attack T Gun", attacker, target);
 							}
-							if(gShadow_Announce_CT_FreeHit >= 2)
+							if(gH_Cvar_Announce_CT_FreeHit.IntValue >= 2)
 							{
 								CPrintToChat(idx, "%s %t", ChatBanner, "CT Attack T Gun", attacker, target);
 							}
@@ -1296,11 +1079,11 @@ public Action LastRequest_PlayerHurt(Event event, const char[] name, bool dontBr
 				{
 					if (IsClientInGame(idx))
 					{
-						if(gShadow_Announce_CT_FreeHit != 2)
+						if(gH_Cvar_Announce_CT_FreeHit.IntValue != 2)
 						{
 							PrintToConsole(idx, "[Hosties] %t", "Freeattack", attacker, target);
 						}
-						if(gShadow_Announce_CT_FreeHit >= 2)
+						if(gH_Cvar_Announce_CT_FreeHit.IntValue >= 2)
 						{
 							CPrintToChat(idx, "%s %t", ChatBanner, "Freeattack", attacker, target);
 						}
@@ -1327,7 +1110,7 @@ public Action LastRequest_PlayerDisconnect(Event event, const char[] name, bool 
 				CleanupLastRequest(client, idx);
 				RemoveFromArray(gH_DArray_LR_Partners, idx);
 				CPrintToChatAll("%s %s", ChatBanner, "LR Player Disconnect", client);
-				if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L has disconnected in LR. LR aborted.", client);
+				if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has disconnected in LR. LR aborted.", client);
 			}
 		}
 	}
@@ -1410,7 +1193,7 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				}
 			}
 			
-			if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Knife Fight.");
+			if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Knife Fight.");
 		}
 		case LR_GunToss:
 		{
@@ -1427,7 +1210,7 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				SetEntityRenderMode(GTdeagle2, RENDER_NORMAL);
 			}
 			
-			if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Gun Toss.");
+			if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Gun Toss.");
 		}
 		case LR_HotPotato:
 		{
@@ -1445,7 +1228,7 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				SetEntityRenderMode(HPdeagle, RENDER_NORMAL);
 			}
 			
-			if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Hot Potato.");
+			if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Hot Potato.");
 		}
 		case LR_RussianRoulette:
 		{
@@ -1454,7 +1237,7 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				SetEntityMoveType(winner, MOVETYPE_WALK);
 			}
 			
-			if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Russian Roulette.");
+			if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Russian Roulette.");
 		}
 		case LR_Dodgeball:
 		{
@@ -1476,13 +1259,13 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				}
 			}
 			
-			if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Dodgeball.");
+			if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Dodgeball.");
 		}
 		case LR_Race:
 		{
 			CloseHandle(GetArrayCell(gH_DArray_LR_Partners, arrayIndex, 9));
 			
-			if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Race.");
+			if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Race.");
 		}
 		case LR_JumpContest:
 		{
@@ -1499,7 +1282,7 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				}
 			}
 			
-			if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Jump Contest.");
+			if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Jump Contest.");
 		}
 		default:
 		{
@@ -1515,24 +1298,26 @@ void CleanupLastRequest(int loser, int arrayIndex)
 				g_LR_Player_Guard[LR_Player_Prisoner] = 0;
 			}
 			
-			if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Default.");
+			if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Successfull cleanup after LR - Default.");
 		}
 	}
 	
-	ConVar Cvar_TeamBlock = FindConVar("mp_solid_teammates");
-	int TeamBlock = GetConVarInt(Cvar_TeamBlock);
 	if (IsClientInGame(LR_Player_Prisoner) && IsPlayerAlive(LR_Player_Prisoner))
 	{
-		if (StripZeus[LR_Player_Prisoner] != INVALID_HANDLE)
+		if (g_Game == Game_CSGO)
 		{
-			KillTimer(StripZeus[LR_Player_Prisoner]);
-			StripZeus[LR_Player_Prisoner] = INVALID_HANDLE;
-		}
+			ConVar Cvar_TeamBlock = FindConVar("mp_solid_teammates");
+			int TeamBlock = GetConVarInt(Cvar_TeamBlock);
 		
-		if (TeamBlock == 1 || TeamBlock == 2)
+			if (TeamBlock == 1 || TeamBlock == 2)
+				BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
+			else
+				UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
+		}
+		else if (g_Game == Game_CSS)
+		{
 			BlockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
-		else
-			UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
+		}
 		
 		SetEntPropFloat(LR_Player_Prisoner, Prop_Data, "m_flLaggedMovementValue", 1.0);
 		
@@ -1540,7 +1325,7 @@ void CleanupLastRequest(int loser, int arrayIndex)
 		
 		StripAllWeapons(LR_Player_Prisoner);
 		
-		if (gShadow_LR_RestoreWeapon_T == 1)
+		if (gH_Cvar_LR_RestoreWeapon_T.BoolValue && g_Game == Game_CSGO)
 		{
 			RestoreWeapons(LR_Player_Prisoner);
 			
@@ -1566,29 +1351,33 @@ void CleanupLastRequest(int loser, int arrayIndex)
 
 		SetEntityHealth(LR_Player_Prisoner, 100);
 		
-		if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L (Prisoner) attribute reset after LR.", LR_Player_Prisoner);
+		if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L (Prisoner) attribute reset after LR.", LR_Player_Prisoner);
 	}
 	
 	if (IsClientInGame(LR_Player_Guard) && IsPlayerAlive(LR_Player_Guard))
 	{
-		if (StripZeus[LR_Player_Guard] != INVALID_HANDLE)
-		{
-			KillTimer(StripZeus[LR_Player_Guard]);
-			StripZeus[LR_Player_Guard] = INVALID_HANDLE;
-		}
-		
 		SetEntPropFloat(LR_Player_Guard, Prop_Data, "m_flLaggedMovementValue", 1.0);
 		
-		if (TeamBlock == 1 || TeamBlock == 2)
+		if (g_Game == Game_CSGO)
+		{
+			ConVar Cvar_TeamBlock = FindConVar("mp_solid_teammates");
+			int TeamBlock = GetConVarInt(Cvar_TeamBlock);
+		
+			if (TeamBlock == 1 || TeamBlock == 2)
+				BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
+			else
+				UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
+		}
+		else if (g_Game == Game_CSS)
+		{
 			BlockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
-		else
-			UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
+		}
 		
 		SetEntityMoveType(LR_Player_Guard, MOVETYPE_WALK);
 		
 		StripAllWeapons(LR_Player_Guard);
 		
-		if (gShadow_LR_RestoreWeapon_CT == 1)
+		if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue && g_Game == Game_CSGO)
 		{
 			RestoreWeapons(LR_Player_Guard);
 			
@@ -1614,14 +1403,14 @@ void CleanupLastRequest(int loser, int arrayIndex)
 		
 		SetEntityHealth(LR_Player_Guard, 100);
 		
-		if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L (Guard) attribute reset after LR.", LR_Player_Guard);
+		if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L (Guard) attribute reset after LR.", LR_Player_Guard);
 	}
 }
 
 public Action LastRequest_BulletImpact(Event event, const char[] name, bool dontBroadcast)
 {
 	int attacker = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (!g_bIsARebel[attacker] && gShadow_RebelOnImpact && (GetClientTeam(attacker) == CS_TEAM_T) && !Local_IsClientInLR(attacker))
+	if (!g_bIsARebel[attacker] && gH_Cvar_RebelOnImpact.BoolValue && (GetClientTeam(attacker) == CS_TEAM_T) && !Local_IsClientInLR(attacker))
 	{
 		g_bIsARebel[attacker] = true;
 		MarkRebel(attacker, 0);
@@ -1803,13 +1592,13 @@ public Action LastRequest_WeaponFire(Event event, const char[] name, bool dontBr
 							SetArrayCell(gH_DArray_LR_Partners, idx, currentAmmo, view_as<int>(Block_Global3));
 							SetArrayCell(gH_DArray_LR_Partners, idx, ++M4M_RoundsFired, view_as<int>(Block_Global2));
 							
-							if (M4M_RoundsFired >= gShadow_LR_M4M_MagCapacity)
+							if (M4M_RoundsFired >= gH_Cvar_LR_M4M_MagCapacity.IntValue)
 							{
 								M4M_RoundsFired = 0;
 								SetArrayCell(gH_DArray_LR_Partners, idx, M4M_RoundsFired, view_as<int>(Block_Global2));
-								if (gShadow_Announce_Shot4Shot)
+								if (gH_Cvar_Announce_Shot4Shot.BoolValue)
 								{
-									if (gShadow_SendGlobalMsgs)
+									if (gH_Cvar_SendGlobalMsgs.BoolValue)
 									{
 										CPrintToChatAll("%s %t", ChatBanner, "M4M Mag Used", client);
 									}
@@ -1823,12 +1612,12 @@ public Action LastRequest_WeaponFire(Event event, const char[] name, bool dontBr
 								// send it to the next player
 								if (LR_Player_Prisoner == client)
 								{
-									SetEntData(M4M_Guard_Weapon, g_Offset_Clip1, gShadow_LR_M4M_MagCapacity);
+									SetEntData(M4M_Guard_Weapon, g_Offset_Clip1, gH_Cvar_LR_M4M_MagCapacity.IntValue);
 									SetArrayCell(gH_DArray_LR_Partners, idx, LR_Player_Guard, view_as<int>(Block_Global1));
 								}
 								else if (LR_Player_Guard == client)
 								{
-									SetEntData(M4M_Prisoner_Weapon, g_Offset_Clip1, gShadow_LR_M4M_MagCapacity);
+									SetEntData(M4M_Prisoner_Weapon, g_Offset_Clip1, gH_Cvar_LR_M4M_MagCapacity.IntValue);
 									SetArrayCell(gH_DArray_LR_Partners, idx, LR_Player_Prisoner, view_as<int>(Block_Global1));
 								}
 								
@@ -1857,9 +1646,9 @@ public Action LastRequest_WeaponFire(Event event, const char[] name, bool dontBr
 					int Prisoner_Weapon = EntRefToEntIndex(GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_PrisonerData)));
 					int Guard_Weapon = EntRefToEntIndex(GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_GuardData)));
 
-					if (gShadow_Announce_Shot4Shot)
+					if (gH_Cvar_Announce_Shot4Shot.BoolValue)
 					{
-						if (gShadow_SendGlobalMsgs)
+						if (gH_Cvar_SendGlobalMsgs.BoolValue)
 						{
 							CPrintToChatAll("%s %t", ChatBanner, "S4S Shot Taken", client);
 						}
@@ -1915,7 +1704,7 @@ public Action LastRequest_WeaponFire(Event event, const char[] name, bool dontBr
 					
 					if (iClientWeapon != Prisoner_S4S_Pistol && iClientWeapon != Guard_S4S_Pistol && StrContains(FiredWeapon, "knife") == -1)
 					{
-						RightKnifeAntiCheat(client, idx);
+						if (g_Game == Game_CSGO) RightKnifeAntiCheat(client, idx);
 						DecideRebelsFate(client, idx, -1);
 					}
 					else if (StrContains(FiredWeapon, "knife") == -1)
@@ -1924,17 +1713,17 @@ public Action LastRequest_WeaponFire(Event event, const char[] name, bool dontBr
 						SetArrayCell(gH_DArray_LR_Partners, idx, client, view_as<int>(Block_Global1));
 						
 						// check for double shot situation (if they picked up another deagle with more ammo between shots)
-						if (gShadow_LR_S4S_DoubleShot && (S4Slastshot == client))
+						if (gH_Cvar_LR_S4S_DoubleShot.BoolValue && (S4Slastshot == client))
 						{
 							// this should no longer be possible to do without extra manipulation	
-							RightKnifeAntiCheat(client, idx);
+							if (g_Game == Game_CSGO) RightKnifeAntiCheat(client, idx);
 							DecideRebelsFate(client, idx, -1);
 						}
 						else // if we didn't repeat
 						{		
-							if (gShadow_Announce_Shot4Shot)
+							if (gH_Cvar_Announce_Shot4Shot.BoolValue)
 							{
-								if (gShadow_SendGlobalMsgs)
+								if (gH_Cvar_SendGlobalMsgs.BoolValue)
 								{
 									CPrintToChatAll("%s %t", ChatBanner, "S4S Shot Taken", client);
 								}
@@ -2036,7 +1825,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				char UsedWeapon[64];
 				if (Weapon_IsValid(weapon))
 				{
-					GetEdictClassname(weapon, UsedWeapon, sizeof(UsedWeapon));
+					GetEntityClassname(weapon, UsedWeapon, sizeof(UsedWeapon));
 				}
 				ReplaceString(UsedWeapon, sizeof(UsedWeapon), "weapon_", "", false); 
 				
@@ -2051,7 +1840,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					if ((weapon != -1) && (weapon != Pistol_Prisoner) && (weapon != Pistol_Guard))
 					{
 						DecideRebelsFate(attacker, idx, victim);
-						RightKnifeAntiCheat(attacker, idx);
+						if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
 					}
 					
 					// null any damage
@@ -2069,7 +1858,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 						}
 						default:
 						{
-							if (gShadow_SendGlobalMsgs)
+							if (gH_Cvar_SendGlobalMsgs.BoolValue)
 							{						
 								CPrintToChatAll("%s %t", ChatBanner, "Russian Roulette - Miss");
 							}
@@ -2086,9 +1875,9 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					(attacker == LR_Player_Guard || attacker == LR_Player_Prisoner) && \
 					(victim == LR_Player_Guard || victim == LR_Player_Prisoner))
 				{
-					if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in RPS/R/JC", attacker, UsedWeapon);
+					if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in RPS/R/JC", attacker, UsedWeapon);
 					DecideRebelsFate(attacker, idx, -1);
-					RightKnifeAntiCheat(attacker, idx);
+					if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
 					
 					damage = 0.0;
 					return Plugin_Changed;
@@ -2103,9 +1892,9 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					
 					if (!StrEqual(ActiveWeapon, "flashbang"))
 					{
-						if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in Dodgeball", attacker, ActiveWeapon);
+						if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in Dodgeball", attacker, ActiveWeapon);
 						DecideRebelsFate(attacker, idx, -1);
-						RightKnifeAntiCheat(attacker, idx);
+						if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
 						
 						damage = 0.0;
 						return Plugin_Changed;
@@ -2117,7 +1906,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				{
 					if (weapon > 0 && !weapon)
 					{
-						GetEdictClassname(weapon, UsedWeapon, sizeof(UsedWeapon));
+						GetEntityClassname(weapon, UsedWeapon, sizeof(UsedWeapon));
 						ReplaceString(UsedWeapon, sizeof(UsedWeapon), "weapon_", "", false);
 					}
 					
@@ -2135,9 +1924,9 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 						else if (!StrEqual(Picked_Pistol[attacker], UsedWeapon))
 						{
 							damage = 0.0;
-							RightKnifeAntiCheat(attacker, idx);
+							if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
 							DecideRebelsFate(attacker, idx);
-							if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in Shot4Shot - Choosen weapon is %s", attacker, UsedWeapon, Picked_Pistol[attacker]);
+							if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in Shot4Shot - Choosen weapon is %s", attacker, UsedWeapon, Picked_Pistol[attacker]);
 							return Plugin_Changed;
 						}
 					}
@@ -2153,18 +1942,20 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					((attacker == LR_Player_Guard && victim == LR_Player_Prisoner) || \
 					(attacker == LR_Player_Prisoner && victim == LR_Player_Guard)))
 				{
-					if (weapon != Picked_NSW[attacker])
+					char buffer[64], NsWeaponName[64];
+					Client_GetActiveWeaponName(attacker, buffer, sizeof(buffer));
+					GetEntityClassname(Picked_NSW[attacker], NsWeaponName, sizeof(NsWeaponName));
+					
+					if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
+					
+					if (!StrEqual(buffer, NsWeaponName))
 					{
 						damage = 0.0;
-						RightKnifeAntiCheat(attacker, idx);
 						DecideRebelsFate(attacker, idx);
-						if (gShadow_LR_Debug_Enabled == true)
-						{
-							char NsWeaponName[64];
-							GetEdictClassname(Picked_NSW[attacker], NsWeaponName, sizeof(NsWeaponName));
-							ReplaceString(NsWeaponName, sizeof(NsWeaponName), "weapon_", "", false); 
-							LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in NoScope", attacker, NsWeaponName);
-						}
+						
+						if (gH_Cvar_LR_Debug_Enabled.BoolValue)
+							LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using '%s' in NoScope (picked is '%s') - 2170", attacker, buffer, NsWeaponName);
+						
 						return Plugin_Changed;
 					}
 				}
@@ -2183,7 +1974,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					damage = 0.0;
 					return Plugin_Changed;
 				}
-				else if (!gShadow_LR_Damage)
+				else if (!gH_Cvar_LR_Damage.BoolValue)
 				{
 					return Plugin_Continue;
 				}
@@ -2256,7 +2047,7 @@ public Action OnWeaponDecideUse(int client, int weapon)
 			else if (type == LR_KnifeFight && g_Game == Game_CSGO)
 			{
 				char weapon_name[32];
-				GetEdictClassname(weapon, weapon_name, sizeof(weapon_name));
+				GetEntityClassname(weapon, weapon_name, sizeof(weapon_name));
 				
 				// block any weapon pickup during the LR except knife
 				if ((client == LR_Player_Guard || client == LR_Player_Prisoner) && !StrEqual(weapon_name, "weapon_knife"))
@@ -2274,7 +2065,7 @@ public Action OnWeaponDecideUse(int client, int weapon)
 			else if (type == LR_NoScope && g_Game == Game_CSGO)
 			{
 				char weapon_name[32];
-				GetEdictClassname(weapon, weapon_name, sizeof(weapon_name));
+				GetEntityClassname(weapon, weapon_name, sizeof(weapon_name));
 				
 				// block switching to knife for NoScope
 				if ((client == LR_Player_Guard || client == LR_Player_Prisoner) && StrEqual(weapon_name, "weapon_knife"))
@@ -2310,7 +2101,7 @@ public Action OnWeaponEquip(int client, int weapon)
 					if (client == LR_Player_Prisoner && GTp1dropped && !GTp1done)
 					{
 						char weapon_name[32];
-						GetEdictClassname(weapon, weapon_name, sizeof(weapon_name));
+						GetEntityClassname(weapon, weapon_name, sizeof(weapon_name));
 						if (StrEqual(weapon_name, "weapon_deagle"))
 						{
 							SetArrayCell(gH_DArray_LR_Partners, idx, true, view_as<int>(Block_Global3));
@@ -2320,7 +2111,7 @@ public Action OnWeaponEquip(int client, int weapon)
 					else if (client == LR_Player_Guard && GTp2dropped && !GTp2done)
 					{
 						char weapon_name[32];
-						GetEdictClassname(weapon, weapon_name, sizeof(weapon_name));
+						GetEntityClassname(weapon, weapon_name, sizeof(weapon_name));
 						if (StrEqual(weapon_name, "weapon_deagle"))
 						{
 							SetArrayCell(gH_DArray_LR_Partners, idx, true, view_as<int>(Block_Global4));
@@ -2329,7 +2120,7 @@ public Action OnWeaponEquip(int client, int weapon)
 					}
 					
 					char weapon_name[32];
-					GetEdictClassname(weapon, weapon_name, sizeof(weapon_name));
+					GetEntityClassname(weapon, weapon_name, sizeof(weapon_name));
 					if (StrEqual(weapon_name, "weapon_deagle"))
 					{
 						if ((GTp1done && GTp2done) && (GTp1dropped && GTp2dropped))
@@ -2359,17 +2150,17 @@ public Action OnWeaponEquip(int client, int weapon)
 					if (weapon == HPdeagle)
 					{
 						SetArrayCell(gH_DArray_LR_Partners, idx, client, view_as<int>(Block_Global1)); // HPloser
-						if (gShadow_LR_HotPotato_Mode != 2)
+						if (gH_Cvar_LR_HotPotato_Mode.IntValue != 2)
 						{
-							SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", gShadow_LR_HotPotato_Speed);
+							SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", gH_Cvar_LR_HotPotato_Speed.FloatValue);
 							// reset other player's speed
 							SetEntPropFloat((client == LR_Player_Prisoner ? LR_Player_Guard : LR_Player_Prisoner), 
 								Prop_Data, "m_flLaggedMovementValue", 1.0);
 						}
 						
-						if (gShadow_Announce_HotPotato_Eqp)
+						if (gH_Cvar_Announce_HotPotato_Eqp.BoolValue)
 						{
-							if (gShadow_SendGlobalMsgs)
+							if (gH_Cvar_SendGlobalMsgs.BoolValue)
 							{
 								CPrintToChatAll("%s %t", ChatBanner, "Hot Potato PickUp", client);
 							}
@@ -2424,7 +2215,7 @@ public Action OnWeaponDrop(int client, int weapon)
 						if (IsValidEntity(weapon))
 						{
 							char weapon_name[32];
-							GetEdictClassname(weapon, weapon_name, sizeof(weapon_name));
+							GetEntityClassname(weapon, weapon_name, sizeof(weapon_name));
 							if (StrEqual(weapon_name, "weapon_deagle"))
 							{
 								CPrintToChat(client, "%s %t", ChatBanner, "Already Dropped Deagle");
@@ -2440,6 +2231,7 @@ public Action OnWeaponDrop(int client, int weapon)
 							if (IsValidEntity(GTdeagle1))
 							{
 								SetEntData(GTdeagle1, g_Offset_Clip1, 250);
+								GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
 							}
 							
 							if (weapon == GTdeagle1)
@@ -2465,6 +2257,7 @@ public Action OnWeaponDrop(int client, int weapon)
 							if (IsValidEntity(GTdeagle2))
 							{
 								SetEntData(GTdeagle2, g_Offset_Clip1, 250);
+								GivePlayerItem(LR_Player_Guard, "weapon_knife");
 							}
 
 							if (weapon == GTdeagle2)
@@ -2596,80 +2389,67 @@ void LastRequest_OnConfigsExecuted()
 	{
 		int iIndex = 0;
 		// Check LRs
-		gShadow_LR_KnifeFight_On = GetConVarBool(gH_Cvar_LR_KnifeFight_On);
-		if (gShadow_LR_KnifeFight_On)
+		if (gH_Cvar_LR_KnifeFight_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_KnifeFight);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_Shot4Shot_On = GetConVarBool(gH_Cvar_LR_Shot4Shot_On);
-		if (gShadow_LR_Shot4Shot_On)
+		if (gH_Cvar_LR_Shot4Shot_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_Shot4Shot);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_GunToss_On = GetConVarBool(gH_Cvar_LR_GunToss_On);
-		if (gShadow_LR_GunToss_On)
+		if (gH_Cvar_LR_GunToss_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_GunToss);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_ChickenFight_On = GetConVarBool(gH_Cvar_LR_ChickenFight_On);
-		if (gShadow_LR_ChickenFight_On)
+		if (gH_Cvar_LR_ChickenFight_On.IntValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_ChickenFight);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_HotPotato_On = GetConVarBool(gH_Cvar_LR_HotPotato_On);
-		if (gShadow_LR_HotPotato_On)
+		if (gH_Cvar_LR_HotPotato_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_HotPotato);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_Dodgeball_On = GetConVarBool(gH_Cvar_LR_Dodgeball_On);
-		if (gShadow_LR_Dodgeball_On)
+		if (gH_Cvar_LR_Dodgeball_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_Dodgeball);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_NoScope_On = GetConVarBool(gH_Cvar_LR_NoScope_On);
-		if (gShadow_LR_NoScope_On)
+		if (gH_Cvar_LR_NoScope_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_NoScope);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_RockPaperScissors_On = GetConVarBool(gH_Cvar_LR_RockPaperScissors_On);
-		if (gShadow_LR_RockPaperScissors_On)
+		if (gH_Cvar_LR_RockPaperScissors_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_RockPaperScissors);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_Rebel_On = GetConVarBool(gH_Cvar_LR_Rebel_On);
-		if (gShadow_LR_Rebel_On)
+		if (gH_Cvar_LR_Rebel_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_Rebel);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_Mag4Mag_On = GetConVarBool(gH_Cvar_LR_Mag4Mag_On);
-		if (gShadow_LR_Mag4Mag_On)
+		if (gH_Cvar_LR_Mag4Mag_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_Mag4Mag);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_Race_On = GetConVarBool(gH_Cvar_LR_Race_On);
-		if (gShadow_LR_Race_On)
+		if (gH_Cvar_LR_Race_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_Race);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_RussianRoulette_On = GetConVarBool(gH_Cvar_LR_RussianRoulette_On);
-		if (gShadow_LR_RussianRoulette_On)
+		if (gH_Cvar_LR_RussianRoulette_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_RussianRoulette);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
 		}
-		gShadow_LR_JumpContest_On = GetConVarBool(gH_Cvar_LR_JumpContest_On);
-		if (gShadow_LR_JumpContest_On)
+		if (gH_Cvar_LR_JumpContest_On.BoolValue)
 		{
 			iIndex = PushArrayCell(gH_DArray_LastRequests, LR_JumpContest);
 			SetArrayCell(gH_DArray_LastRequests, iIndex, true, 1);
@@ -2679,44 +2459,24 @@ void LastRequest_OnConfigsExecuted()
 	
 	// check for -1 for backward compatibility
 	MediaType soundfile = type_Sound;
-	GetConVarString(gH_Cvar_LR_NoScope_Sound, gShadow_LR_NoScope_Sound, sizeof(gShadow_LR_NoScope_Sound));
-	if ((strlen(gShadow_LR_NoScope_Sound) > 0) && !StrEqual(gShadow_LR_NoScope_Sound, "-1"))
+	char buffer[PLATFORM_MAX_PATH];
+	gH_Cvar_LR_NoScope_Sound.GetString(buffer, sizeof(buffer));
+	if ((strlen(buffer) > 0) && !StrEqual(buffer, "-1"))
 	{		
-		CacheTheFile(gShadow_LR_NoScope_Sound, soundfile);
+		CacheTheFile(buffer, soundfile);
 	}
-	GetConVarString(gH_Cvar_LR_Sound, gShadow_LR_Sound, sizeof(gShadow_LR_Sound));
-	if ((strlen(gShadow_LR_Sound) > 0) && !StrEqual(gShadow_LR_Sound, "-1"))
+	gH_Cvar_LR_Sound.GetString(buffer, sizeof(buffer));
+	if ((strlen(buffer) > 0) && !StrEqual(buffer, "-1"))
 	{
-		CacheTheFile(gShadow_LR_Sound, soundfile);
+		CacheTheFile(buffer, soundfile);
 	}
-	GetConVarString(gH_Cvar_LR_Beacon_Sound, gShadow_LR_Beacon_Sound, sizeof(gShadow_LR_Beacon_Sound));
-	if ((strlen(gShadow_LR_Beacon_Sound) > 0) && !StrEqual(gShadow_LR_Beacon_Sound, "-1"))
+	gH_Cvar_LR_Beacon_Sound.GetString(buffer, sizeof(buffer));
+	if ((strlen(buffer) > 0) && !StrEqual(buffer, "-1"))
 	{
-		CacheTheFile(gShadow_LR_Beacon_Sound, soundfile);
+		CacheTheFile(buffer, soundfile);
 	}
-	
-	// update settings from configs
-	gShadow_LR_Enable = view_as<bool>(GetConVarInt(gH_Cvar_LR_Enable));
-	gShadow_LR_MenuTime = GetConVarInt(gH_Cvar_LR_MenuTime);
-	gShadow_LR_KillTimeouts = view_as<bool>(GetConVarInt(gH_Cvar_LR_KillTimeouts));
-	gShadow_LR_HotPotato_Mode = GetConVarInt(gH_Cvar_LR_HotPotato_Mode);
-	gShadow_SendGlobalMsgs = GetConVarInt(gH_Cvar_SendGlobalMsgs);
-	gShadow_MaxPrisonersToLR = GetConVarInt(gH_Cvar_MaxPrisonersToLR);
-	gShadow_RebelAction = GetConVarInt(gH_Cvar_RebelAction);
-	gShadow_RebelHandling = GetConVarInt(gH_Cvar_RebelHandling);
-	gShadow_ColorRebels = GetConVarInt(gH_Cvar_ColorRebels);
-	gShadow_Announce_CT_FreeHit = GetConVarInt(gH_Cvar_Announce_CT_FreeHit);
-	gShadow_Announce_LR = view_as<bool>(GetConVarInt(gH_Cvar_Announce_LR));
-	gShadow_Announce_Rebel = view_as<bool>(GetConVarInt(gH_Cvar_Announce_Rebel));
-	gShadow_Announce_RebelDown = view_as<bool>(GetConVarInt(gH_Cvar_Announce_RebelDown));
-	gShadow_Announce_Weapon_Attack = view_as<bool>(GetConVarInt(gH_Cvar_Announce_Weapon_Attack));
-	gShadow_Announce_HotPotato_Eqp = view_as<bool>(GetConVarInt(gH_Cvar_Announce_HotPotato_Eqp));
-	gShadow_LR_AutoDisplay = view_as<bool>(GetConVarInt(gH_Cvar_LR_AutoDisplay));
-	gShadow_LR_BlockSuicide = view_as<bool>(GetConVarInt(gH_Cvar_LR_BlockSuicide));
-	gShadow_LR_VictorPoints = GetConVarInt(gH_Cvar_LR_VictorPoints);
-	gShadow_LR_RestoreWeapon_T = GetConVarInt(gH_Cvar_LR_RestoreWeapon_T);
-	gShadow_LR_RestoreWeapon_CT = GetConVarInt(gH_Cvar_LR_RestoreWeapon_CT);
-	if (gShadow_LR_BlockSuicide && !g_bListenersAdded)
+
+	if (gH_Cvar_LR_BlockSuicide.BoolValue && !g_bListenersAdded)
 	{
 		AddCommandListener(Suicide_Check, "kill");
 		AddCommandListener(Suicide_Check, "explode");
@@ -2724,7 +2484,7 @@ void LastRequest_OnConfigsExecuted()
 		AddCommandListener(Suicide_Check, "spectate");
 		g_bListenersAdded = true;
 	}
-	else if (!gShadow_LR_BlockSuicide && g_bListenersAdded)
+	else if (!gH_Cvar_LR_BlockSuicide.BoolValue && g_bListenersAdded)
 	{
 		RemoveCommandListener(Suicide_Check, "kill");
 		RemoveCommandListener(Suicide_Check, "explode");
@@ -2732,245 +2492,13 @@ void LastRequest_OnConfigsExecuted()
 		RemoveCommandListener(Suicide_Check, "spectate");
 		g_bListenersAdded = false;
 	}
-	gShadow_LR_Race_AirPoints = view_as<bool>(GetConVarInt(gH_Cvar_LR_Race_AirPoints));
-	gShadow_LR_Debug_Enabled = view_as<bool>(GetConVarInt(gH_Cvar_LR_Debug_Enabled));
-	gShadow_LR_Race_NotifyCTs = view_as<bool>(GetConVarInt(gH_Cvar_LR_Race_NotifyCTs));
-	gShadow_LR_Beacons = view_as<bool>(GetConVarInt(gH_Cvar_LR_Beacons));
-	gShadow_LR_HelpBeams = view_as<bool>(GetConVarInt(gH_Cvar_LR_HelpBeams));
-	gShadow_LR_HelpBeams_Distance = GetConVarFloat(gH_Cvar_LR_HelpBeams_Distance);
-	gShadow_LR_Beacon_Interval = GetConVarFloat(gH_Cvar_LR_Beacon_Interval);
-	gShadow_RebelOnImpact = view_as<bool>(GetConVarInt(gH_Cvar_RebelOnImpact));
-	gShadow_ColorRebels_Blue = GetConVarInt(gH_Cvar_ColorRebels_Blue);
-	gShadow_ColorRebels_Green = GetConVarInt(gH_Cvar_ColorRebels_Green);
-	gShadow_ColorRebels_Red = GetConVarInt(gH_Cvar_ColorRebels_Red);
-	gShadow_LR_ChickenFight_C_Blue = GetConVarInt(gH_Cvar_LR_ChickenFight_C_Blue);
-	gShadow_LR_ChickenFight_C_Green = GetConVarInt(gH_Cvar_LR_ChickenFight_C_Green);
-	gShadow_LR_ChickenFight_C_Red = GetConVarInt(gH_Cvar_LR_ChickenFight_C_Red);
-	gShadow_LR_ChickenFight_Slay = view_as<bool>(GetConVarInt(gH_Cvar_LR_ChickenFight_Slay));
-	gShadow_LR_Dodgeball_CheatCheck = view_as<bool>(GetConVarInt(gH_Cvar_LR_Dodgeball_CheatCheck));
-	gShadow_LR_Dodgeball_Gravity = GetConVarFloat(gH_Cvar_LR_Dodgeball_Gravity);
-	gShadow_LR_Dodgeball_SpawnTime = GetConVarFloat(gH_Cvar_LR_Dodgeball_SpawnTime);
-	gShadow_LR_HotPotato_MaxTime = GetConVarFloat(gH_Cvar_LR_HotPotato_MaxTime);
-	gShadow_LR_HotPotato_MinTime = GetConVarFloat(gH_Cvar_LR_HotPotato_MinTime);
-	gShadow_LR_HotPotato_Speed = GetConVarFloat(gH_Cvar_LR_HotPotato_Speed);
-	GetConVarString(gH_Cvar_LR_NoScope_Sound, gShadow_LR_NoScope_Sound, sizeof(gShadow_LR_NoScope_Sound));
-	GetConVarString(gH_Cvar_LR_Sound, gShadow_LR_Sound, sizeof(gShadow_LR_Sound));
-	GetConVarString(gH_Cvar_LR_Beacon_Sound, gShadow_LR_Beacon_Sound, sizeof(gShadow_LR_Beacon_Sound));	
-	gShadow_LR_NoScope_Weapon = GetConVarInt(gH_Cvar_LR_NoScope_Weapon);
-	gShadow_Announce_Shot4Shot = view_as<bool>(GetConVarInt(gH_Cvar_Announce_Shot4Shot));
-	gShadow_LR_NonContKiller_Action = view_as<bool>(GetConVarInt(gH_Cvar_LR_NonContKiller_Action));
-	gShadow_LR_S4S_DoubleShot = view_as<bool>(GetConVarInt(gH_Cvar_LR_S4S_DoubleShot));
-	gShadow_LR_GunToss_MarkerMode = GetConVarInt(gH_Cvar_LR_GunToss_MarkerMode);
-	gShadow_LR_GunToss_ShowMeter = GetConVarInt(gH_Cvar_LR_GunToss_ShowMeter);
-	gShadow_LR_Delay_Enable_Time = GetConVarFloat(gH_Cvar_LR_Delay_Enable_Time);
-	gShadow_Announce_Delay_Enable = view_as<bool>(GetConVarInt(gH_Cvar_Announce_Delay_Enable));
-	gShadow_LR_Damage = view_as<bool>(GetConVarInt(gH_Cvar_LR_Damage)); 	
-	gShadow_LR_NoScope_Delay = GetConVarInt(gH_Cvar_LR_NoScope_Delay);
-	gShadow_LR_KnifeFight_Rebel = GetConVarInt(gH_Cvar_LR_KnifeFight_Rebel);
-	gShadow_LR_ChickenFight_Rebel = GetConVarInt(gH_Cvar_LR_ChickenFight_Rebel);
-	gShadow_LR_HotPotato_Rebel = GetConVarInt(gH_Cvar_LR_HotPotato_Rebel);	
-	gShadow_LR_Rebel_MaxTs = GetConVarInt(gH_Cvar_LR_Rebel_MaxTs);
-	gShadow_LR_Rebel_MinCTs = GetConVarInt(gH_Cvar_LR_Rebel_MinCTs);
-	gShadow_LR_M4M_MagCapacity = GetConVarInt(gH_Cvar_LR_M4M_MagCapacity);
-	gShadow_LR_KnifeFight_LowGrav = GetConVarFloat(gH_Cvar_LR_KnifeFight_LowGrav);
-	gShadow_LR_KnifeFight_HiSpeed = GetConVarFloat(gH_Cvar_LR_KnifeFight_HiSpeed);
-	gShadow_LR_KnifeFight_Drunk = GetConVarInt(gH_Cvar_LR_KnifeFight_Drunk);
 }
 
 public void ConVarChanged_Setting(Handle cvar, const char[] oldValue, const char[] newValue)
-{	
-	if (cvar == gH_Cvar_LR_Enable)
+{
+	if (cvar == gH_Cvar_LR_BlockSuicide)
 	{
-		gShadow_LR_Enable = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_MenuTime)
-	{
-		gShadow_LR_MenuTime = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_KillTimeouts)
-	{
-		gShadow_LR_KillTimeouts = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_HotPotato_Mode)
-	{
-		gShadow_LR_HotPotato_Mode = StringToInt(newValue);
-	}	
-	else if (cvar == gH_Cvar_SendGlobalMsgs)
-	{
-		gShadow_SendGlobalMsgs = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_MaxPrisonersToLR)
-	{
-		gShadow_MaxPrisonersToLR = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_RebelAction)
-	{
-		gShadow_RebelAction = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_RebelHandling)
-	{
-		gShadow_RebelHandling = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_ColorRebels)
-	{
-		gShadow_ColorRebels = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_Announce_CT_FreeHit)
-	{
-		gShadow_Announce_CT_FreeHit = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_Announce_LR)
-	{
-		gShadow_Announce_LR = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_Announce_Rebel)
-	{
-		gShadow_Announce_Rebel = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_Announce_RebelDown)
-	{
-		gShadow_Announce_RebelDown = view_as<bool>(StringToInt(newValue));		
-	}
-	else if (cvar == gH_Cvar_Announce_Weapon_Attack)
-	{
-		gShadow_Announce_Weapon_Attack = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_Race_AirPoints)
-	{
-		gShadow_LR_Race_AirPoints = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_Race_NotifyCTs)
-	{
-		gShadow_LR_Race_NotifyCTs = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_Beacons)
-	{
-		gShadow_LR_Beacons = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_HelpBeams)
-	{
-		gShadow_LR_HelpBeams = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_HelpBeams_Distance)
-	{
-		gShadow_LR_HelpBeams_Distance = StringToFloat(newValue);
-	}	
-	else if (cvar == gH_Cvar_LR_Beacon_Interval)
-	{
-		gShadow_LR_Beacon_Interval = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_RebelOnImpact)
-	{
-		gShadow_RebelOnImpact = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_ColorRebels_Blue)
-	{
-		gShadow_ColorRebels_Blue = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_ColorRebels_Green)
-	{
-		gShadow_ColorRebels_Green = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_ColorRebels_Red)
-	{
-		gShadow_ColorRebels_Red = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_ChickenFight_C_Blue)
-	{
-		gShadow_LR_ChickenFight_C_Blue = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_ChickenFight_C_Green)
-	{
-		gShadow_LR_ChickenFight_C_Green = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_ChickenFight_C_Red)
-	{
-		gShadow_LR_ChickenFight_C_Red = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_ChickenFight_Slay)
-	{
-		gShadow_LR_ChickenFight_Slay = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_Dodgeball_CheatCheck)
-	{
-		gShadow_LR_Dodgeball_CheatCheck = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_Dodgeball_Gravity)
-	{
-		gShadow_LR_Dodgeball_Gravity = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_Dodgeball_SpawnTime)
-	{
-		gShadow_LR_Dodgeball_SpawnTime = StringToFloat(newValue);
-	}	
-	else if (cvar == gH_Cvar_LR_HotPotato_MaxTime)
-	{
-		gShadow_LR_HotPotato_MaxTime = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_HotPotato_MinTime)
-	{
-		gShadow_LR_HotPotato_MinTime = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_HotPotato_Speed)
-	{
-		gShadow_LR_HotPotato_Speed = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_NoScope_Sound)
-	{
-		Format(gShadow_LR_NoScope_Sound, sizeof(gShadow_LR_NoScope_Sound), newValue);
-	}
-	else if (cvar == gH_Cvar_LR_Sound)
-	{
-		Format(gShadow_LR_Sound, sizeof(gShadow_LR_Sound), newValue);
-	}
-	else if (cvar == gH_Cvar_LR_Beacon_Sound)
-	{
-		Format(gShadow_LR_Beacon_Sound, sizeof(gShadow_LR_Beacon_Sound), newValue);
-	}
-	else if (cvar == gH_Cvar_LR_NoScope_Weapon)
-	{
-		gShadow_LR_NoScope_Weapon = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_Announce_Shot4Shot)
-	{
-		gShadow_Announce_Shot4Shot = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_NonContKiller_Action)
-	{
-		gShadow_LR_NonContKiller_Action = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_S4S_DoubleShot)
-	{
-		gShadow_LR_S4S_DoubleShot = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_GunToss_MarkerMode)
-	{
-		gShadow_LR_GunToss_MarkerMode = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_GunToss_ShowMeter)
-	{
-		gShadow_LR_GunToss_ShowMeter = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_Delay_Enable_Time)
-	{
-		gShadow_LR_Delay_Enable_Time = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_Announce_Delay_Enable)
-	{
-		gShadow_Announce_Delay_Enable = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_Announce_HotPotato_Eqp)
-	{
-		gShadow_Announce_HotPotato_Eqp = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_AutoDisplay)
-	{
-		gShadow_LR_AutoDisplay = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_LR_BlockSuicide)
-	{
-		gShadow_LR_BlockSuicide = view_as<bool>(StringToInt(newValue));
-		if (gShadow_LR_BlockSuicide && !g_bListenersAdded)
+		if (gH_Cvar_LR_BlockSuicide.BoolValue && !g_bListenersAdded)
 		{
 			AddCommandListener(Suicide_Check, "kill");
 			AddCommandListener(Suicide_Check, "explode");
@@ -2978,7 +2506,7 @@ public void ConVarChanged_Setting(Handle cvar, const char[] oldValue, const char
 			AddCommandListener(Suicide_Check, "spectate");
 			g_bListenersAdded = true;
 		}
-		else if (!gShadow_LR_BlockSuicide && g_bListenersAdded)
+		else if (!gH_Cvar_LR_BlockSuicide.BoolValue && g_bListenersAdded)
 		{
 			RemoveCommandListener(Suicide_Check, "kill");
 			RemoveCommandListener(Suicide_Check, "explode");
@@ -2987,139 +2515,6 @@ public void ConVarChanged_Setting(Handle cvar, const char[] oldValue, const char
 			g_bListenersAdded = false;
 		}
 		
-	}
-	else if (cvar == gH_Cvar_LR_VictorPoints)
-	{
-		gShadow_LR_VictorPoints = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_RestoreWeapon_T)
-	{
-		gShadow_LR_RestoreWeapon_T = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_RestoreWeapon_CT)
-	{
-		gShadow_LR_RestoreWeapon_CT = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_Damage)
-	{
-		gShadow_LR_Damage = view_as<bool>(StringToInt(newValue));
-	} 	
-	else if (cvar == gH_Cvar_LR_NoScope_Delay)
-	{
-		gShadow_LR_NoScope_Delay = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_KnifeFight_Rebel)
-	{
-		gShadow_LR_KnifeFight_Rebel = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_ChickenFight_Rebel)
-	{
-		gShadow_LR_ChickenFight_Rebel = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_HotPotato_Rebel)
-	{
-		gShadow_LR_HotPotato_Rebel = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_Rebel_MaxTs)
-	{
-		gShadow_LR_Rebel_MaxTs = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_Rebel_MinCTs)
-	{
-		gShadow_LR_Rebel_MinCTs = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_M4M_MagCapacity)
-	{
-		gShadow_LR_M4M_MagCapacity = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_KnifeFight_LowGrav)
-	{
-		gShadow_LR_KnifeFight_LowGrav = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_KnifeFight_HiSpeed)
-	{
-		gShadow_LR_KnifeFight_HiSpeed = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_LR_KnifeFight_Drunk)
-	{
-		gShadow_LR_KnifeFight_Drunk = StringToInt(newValue);
-	}
-}
-
-public void ConVarChanged_LastRequest(Handle cvar, const char[] oldValue, const char[] newValue)
-{
-	// Perform boolean checking
-	int iNewValue = StringToInt(newValue);
-	int iOldValue = StringToInt(oldValue);
-	if (iNewValue == iOldValue || !g_bPushedToMenu)
-	{
-		return;
-	}
-	
-	if (cvar == gH_Cvar_LR_KnifeFight_On)
-	{
-		gShadow_LR_KnifeFight_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_KnifeFight);
-	}
-	else if (cvar == gH_Cvar_LR_Shot4Shot_On)
-	{
-		gShadow_LR_Shot4Shot_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_Shot4Shot);
-	}
-	else if (cvar == gH_Cvar_LR_GunToss_On)
-	{
-		gShadow_LR_GunToss_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_GunToss);
-	}
-	else if (cvar == gH_Cvar_LR_ChickenFight_On)
-	{
-		gShadow_LR_ChickenFight_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_ChickenFight);
-	}
-	else if (cvar == gH_Cvar_LR_HotPotato_On)
-	{
-		gShadow_LR_HotPotato_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_HotPotato);
-	}
-	else if (cvar == gH_Cvar_LR_Dodgeball_On)
-	{
-		gShadow_LR_Dodgeball_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_Dodgeball);
-	}
-	else if (cvar == gH_Cvar_LR_NoScope_On)
-	{
-		gShadow_LR_NoScope_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_NoScope);
-	}
-	else if (cvar == gH_Cvar_LR_RockPaperScissors_On)
-	{
-		gShadow_LR_RockPaperScissors_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_RockPaperScissors);
-	}
-	else if (cvar == gH_Cvar_LR_Rebel_On)
-	{
-		gShadow_LR_Rebel_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_Rebel);
-	}
-	else if (cvar == gH_Cvar_LR_Mag4Mag_On)
-	{
-		gShadow_LR_Mag4Mag_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_Mag4Mag);
-	}
-	else if (cvar == gH_Cvar_LR_Race_On)
-	{
-		gShadow_LR_Race_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_Race);
-	}
-	else if (cvar == gH_Cvar_LR_RussianRoulette_On)
-	{
-		gShadow_LR_RussianRoulette_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_RussianRoulette);
-	}
-	else if (cvar == gH_Cvar_LR_JumpContest_On)
-	{
-		gShadow_LR_JumpContest_On = view_as<bool>(iNewValue);
-		UpdateLastRequestArray(LR_JumpContest);
 	}
 }
 
@@ -3143,6 +2538,70 @@ void UpdateLastRequestArray(LastRequest entry)
 	else
 	{
 		RemoveFromArray(gH_DArray_LastRequests, iArrayIndex);
+	}
+}
+
+public void ConVarChanged_LastRequest(Handle cvar, const char[] oldValue, const char[] newValue)
+{
+	// Perform boolean checking
+	int iNewValue = StringToInt(newValue);
+	int iOldValue = StringToInt(oldValue);
+	if (iNewValue == iOldValue || !g_bPushedToMenu)
+	{
+		return;
+	}
+	
+	if (cvar == gH_Cvar_LR_KnifeFight_On)
+	{
+		UpdateLastRequestArray(LR_KnifeFight);
+	}
+	else if (cvar == gH_Cvar_LR_Shot4Shot_On)
+	{
+		UpdateLastRequestArray(LR_Shot4Shot);
+	}
+	else if (cvar == gH_Cvar_LR_GunToss_On)
+	{
+		UpdateLastRequestArray(LR_GunToss);
+	}
+	else if (cvar == gH_Cvar_LR_ChickenFight_On)
+	{
+		UpdateLastRequestArray(LR_ChickenFight);
+	}
+	else if (cvar == gH_Cvar_LR_HotPotato_On)
+	{
+		UpdateLastRequestArray(LR_HotPotato);
+	}
+	else if (cvar == gH_Cvar_LR_Dodgeball_On)
+	{
+		UpdateLastRequestArray(LR_Dodgeball);
+	}
+	else if (cvar == gH_Cvar_LR_NoScope_On)
+	{
+		UpdateLastRequestArray(LR_NoScope);
+	}
+	else if (cvar == gH_Cvar_LR_RockPaperScissors_On)
+	{
+		UpdateLastRequestArray(LR_RockPaperScissors);
+	}
+	else if (cvar == gH_Cvar_LR_Rebel_On)
+	{
+		UpdateLastRequestArray(LR_Rebel);
+	}
+	else if (cvar == gH_Cvar_LR_Mag4Mag_On)
+	{
+		UpdateLastRequestArray(LR_Mag4Mag);
+	}
+	else if (cvar == gH_Cvar_LR_Race_On)
+	{
+		UpdateLastRequestArray(LR_Race);
+	}
+	else if (cvar == gH_Cvar_LR_RussianRoulette_On)
+	{
+		UpdateLastRequestArray(LR_RussianRoulette);
+	}
+	else if (cvar == gH_Cvar_LR_JumpContest_On)
+	{
+		UpdateLastRequestArray(LR_JumpContest);
 	}
 }
 
@@ -3173,7 +2632,7 @@ void LastRequest_ClientPutInServer(int client)
 
 public Action Command_LastRequest(int client, int args)
 {
-	if (gShadow_LR_Enable)
+	if (gH_Cvar_LR_Enable.BoolValue)
 	{
 		if (g_bIsLRAvailable)
 		{
@@ -3181,40 +2640,47 @@ public Action Command_LastRequest(int client, int args)
 			{
 				if (IsPlayerAlive(client) && (GetClientTeam(client) == CS_TEAM_T))
 				{
-					if (g_bIsARebel[client] && !gShadow_RebelHandling)
+					if (g_bIsARebel[client] && !gH_Cvar_RebelHandling.IntValue)
 					{
 						CPrintToChat(client, "%s %t", ChatBanner, "LR Rebel Not Allowed");
 					}
 					else
 					{
-						if (GameRules_GetProp("m_bWarmupPeriod") == 0)
+						if ((g_Game == Game_CSGO && GameRules_GetProp("m_bWarmupPeriod") == 0) || g_Game == Game_CSS)
 						{
 							// check the number of terrorists still alive
 							int Ts, CTs, NumCTsAvailable;
 							UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);
 
-							if (Ts <= gShadow_MaxPrisonersToLR || gShadow_MaxPrisonersToLR == 0)
+							if (Ts <= gH_Cvar_MaxPrisonersToLR.IntValue || gH_Cvar_MaxPrisonersToLR.IntValue == 0)
 							{
 								if (CTs > 0)
 								{
 									if (NumCTsAvailable > 0)
 									{
-										ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
-										ConVar g_cvFreezeTime = FindConVar("mp_freezetime");
+										if (g_Game == Game_CSGO)
+										{
+											ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
+											ConVar g_cvFreezeTime = FindConVar("mp_freezetime");
+											
+											int RoundTime = GameRules_GetProp("m_iRoundTime");
+											int GraceTime = GetConVarInt(g_cvGraceTime);
+											int FreezeTime = GetConVarInt(g_cvFreezeTime);
+											
+											int ToCheckTime = (RoundTime - GraceTime - FreezeTime);
 										
-										int RoundTime = GameRules_GetProp("m_iRoundTime");
-										int GraceTime = GetConVarInt(g_cvGraceTime);
-										int FreezeTime = GetConVarInt(g_cvFreezeTime);
-										
-										int ToCheckTime = (RoundTime - GraceTime - FreezeTime);
-									
-										if (g_RoundTime < ToCheckTime)
+											if (g_RoundTime < ToCheckTime)
+											{
+												DisplayLastRequestMenu(client, Ts, CTs);
+											}
+											else
+											{
+												CPrintToChat(client, "%s %t", ChatBanner, "LR Grace TimeBlock");
+											}
+										}
+										else if (g_Game == Game_CSS)
 										{
 											DisplayLastRequestMenu(client, Ts, CTs);
-										}
-										else
-										{
-											CPrintToChat(client, "%s %t", ChatBanner, "LR Grace TimeBlock");
 										}
 									}
 									else
@@ -3289,7 +2755,7 @@ void DisplayLastRequestMenu(int client, int Ts, int CTs)
 		entry = GetArrayCell(gH_DArray_LastRequests, iLR_Index);
 		if (entry < LastRequest)
 		{
-			if (entry != LR_Rebel || (entry == LR_Rebel && Ts <= gShadow_LR_Rebel_MaxTs && CTs >= gShadow_LR_Rebel_MinCTs))
+			if (entry != LR_Rebel || (entry == LR_Rebel && Ts <= gH_Cvar_LR_Rebel_MaxTs.IntValue && CTs >= gH_Cvar_LR_Rebel_MinCTs.IntValue))
 			{
 				Format(sDataField, sizeof(sDataField), "%d", entry);
 				Format(sTitleField, sizeof(sTitleField), "%T", g_sLastRequestPhrase[entry], client);
@@ -3308,8 +2774,8 @@ void DisplayLastRequestMenu(int client, int Ts, int CTs)
 		}
 	}
 	
-	SetMenuExitButton(menu, gShadow_LR_KillTimeouts ? false : true);
-	DisplayMenu(menu, client, gShadow_LR_MenuTime);
+	SetMenuExitButton(menu, gH_Cvar_LR_KillTimeouts.BoolValue ? false : true);
+	DisplayMenu(menu, client, gH_Cvar_LR_MenuTime.IntValue);
 }
 
 public int LR_Selection_Handler(Handle menu, MenuAction action, int client, int iButtonChoice)
@@ -3414,7 +2880,7 @@ public int LR_Selection_Handler(Handle menu, MenuAction action, int client, int 
 							}					
 							case LR_NoScope:
 							{
-								if (gShadow_LR_NoScope_Weapon == 2)
+								if (gH_Cvar_LR_NoScope_Weapon.IntValue == 2)
 								{
 									Handle NSweaponMenu = CreateMenu(SubLRType_MenuHandler);
 									SetMenuTitle(NSweaponMenu, "%T", "NS Weapon Chooser Menu", client);
@@ -3467,7 +2933,7 @@ public int LR_Selection_Handler(Handle menu, MenuAction action, int client, int 
 								SetMenuExitButton(racemenu1, true);
 								DisplayMenu(racemenu1, client, MENU_TIME_FOREVER);						
 								
-								if (gShadow_LR_Race_NotifyCTs)
+								if (gH_Cvar_LR_Race_NotifyCTs.BoolValue)
 								{
 									for (int idx = 1; idx <= MaxClients; idx++)
 									{
@@ -3544,7 +3010,7 @@ public int LR_Selection_Handler(Handle menu, MenuAction action, int client, int 
 		}
 		case MenuAction_Cancel:
 		{
-			if (gShadow_LR_KillTimeouts)
+			if (gH_Cvar_LR_KillTimeouts.BoolValue)
 			{
 				if (g_Game == Game_CSGO)
 				{
@@ -3597,7 +3063,7 @@ void CreateMainPlayerHandler(int client)
 	else
 	{
 		SetMenuExitButton(playermenu, true);
-		DisplayMenu(playermenu, client, gShadow_LR_MenuTime);
+		DisplayMenu(playermenu, client, gH_Cvar_LR_MenuTime.IntValue);
 	}
 }
 
@@ -3656,7 +3122,7 @@ public int RaceEndPointHandler(Handle menu, MenuAction action, int client, int p
 			{
 				if (IsPlayerAlive(client) && (GetClientTeam(client) == CS_TEAM_T))
 				{
-					if (gShadow_LR_Race_AirPoints || (GetEntityFlags(client) & FL_ONGROUND))
+					if (gH_Cvar_LR_Race_AirPoints.BoolValue || (GetEntityFlags(client) & FL_ONGROUND))
 					{
 						// use this location
 						float f_EndLocation[3];
@@ -3733,7 +3199,7 @@ public int RaceStartPointHandler(Handle menu, MenuAction action, int client, int
 			{
 				if (IsPlayerAlive(client) && (GetClientTeam(client) == CS_TEAM_T))
 				{
-					if (gShadow_LR_Race_AirPoints || (GetEntityFlags(client) & FL_ONGROUND))
+					if (gH_Cvar_LR_Race_AirPoints.BoolValue || (GetEntityFlags(client) & FL_ONGROUND))
 					{
 						// use this location
 						float f_StartPoint[3];
@@ -3817,7 +3283,7 @@ public int MainPlayerHandler(Handle playermenu, MenuAction action, int client, i
 							int Ts, CTs, iNumCTsAvailable;
 							UpdatePlayerCounts(Ts, CTs, iNumCTsAvailable);
 							
-							if (Ts <= gShadow_MaxPrisonersToLR || gShadow_MaxPrisonersToLR == 0)
+							if (Ts <= gH_Cvar_MaxPrisonersToLR.IntValue || gH_Cvar_MaxPrisonersToLR.IntValue == 0)
 							{
 								if (CTs > 0)
 								{
@@ -3825,7 +3291,7 @@ public int MainPlayerHandler(Handle playermenu, MenuAction action, int client, i
 									{
 										if (!IsFakeClient(ClientIdxOfCT))
 										{
-											if (!g_bIsARebel[client] || (gShadow_RebelHandling == 2))
+											if (!g_bIsARebel[client] || (gH_Cvar_RebelHandling.IntValue == 2))
 											{
 												if (!g_bInLastRequest[ClientIdxOfCT])
 												{
@@ -3981,7 +3447,7 @@ public int MainAskHandler(Handle askmenu, MenuAction action, int client, int par
 										}
 									}
 
-									if (T_Count <= gShadow_MaxPrisonersToLR || gShadow_MaxPrisonersToLR == 0)
+									if (T_Count <= gH_Cvar_MaxPrisonersToLR.IntValue || gH_Cvar_MaxPrisonersToLR.IntValue == 0)
 									{								
 										LastRequest game = g_LRLookup[g_LR_PermissionLookup[client]];
 										
@@ -4062,7 +3528,7 @@ void InitializeGame(int iPartnersIndex)
 	int LR_Player_Guard = GetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, view_as<int>(Block_Guard));
 	
 	// Beacon players
-	if (gShadow_LR_Beacons && selection != LR_Rebel && selection != LR_RussianRoulette)
+	if (gH_Cvar_LR_Beacons.BoolValue && selection != LR_Rebel && selection != LR_RussianRoulette)
 	{
 		AddBeacon(LR_Player_Prisoner);
 		AddBeacon(LR_Player_Guard);
@@ -4106,12 +3572,12 @@ void InitializeGame(int iPartnersIndex)
 	{
 		case LR_KnifeFight:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -4139,13 +3605,13 @@ void InitializeGame(int iPartnersIndex)
 				}
 				case Knife_LowGrav:
 				{
-					SetEntityGravity(LR_Player_Prisoner, gShadow_LR_KnifeFight_LowGrav);
-					SetEntityGravity(LR_Player_Guard, gShadow_LR_KnifeFight_LowGrav);
+					SetEntityGravity(LR_Player_Prisoner, gH_Cvar_LR_KnifeFight_LowGrav.FloatValue);
+					SetEntityGravity(LR_Player_Guard, gH_Cvar_LR_KnifeFight_LowGrav.FloatValue);
 				}
 				case Knife_HiSpeed:
 				{
-					SetEntPropFloat(LR_Player_Prisoner, Prop_Data, "m_flLaggedMovementValue", gShadow_LR_KnifeFight_HiSpeed);
-					SetEntPropFloat(LR_Player_Guard, Prop_Data, "m_flLaggedMovementValue", gShadow_LR_KnifeFight_HiSpeed);
+					SetEntPropFloat(LR_Player_Prisoner, Prop_Data, "m_flLaggedMovementValue", gH_Cvar_LR_KnifeFight_HiSpeed.FloatValue);
+					SetEntPropFloat(LR_Player_Guard, Prop_Data, "m_flLaggedMovementValue", gH_Cvar_LR_KnifeFight_HiSpeed.FloatValue);
 				}
 				case Knife_ThirdPerson:
 				{
@@ -4174,12 +3640,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_Shot4Shot:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -4303,7 +3769,7 @@ void InitializeGame(int iPartnersIndex)
 				SetEntData(Pistol_Prisoner, g_Offset_Clip1, 0);
 				SetEntData(Pistol_Guard, g_Offset_Clip1, 1);
 				SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, LR_Player_Prisoner, view_as<int>(Block_Global1));
-				if (gShadow_SendGlobalMsgs)
+				if (gH_Cvar_SendGlobalMsgs.BoolValue)
 				{
 					CPrintToChatAll("%s %t", ChatBanner, "Randomly Chose First Player", LR_Player_Guard);
 				}
@@ -4318,7 +3784,7 @@ void InitializeGame(int iPartnersIndex)
 				SetEntData(Pistol_Prisoner, g_Offset_Clip1, 1);
 				SetEntData(Pistol_Guard, g_Offset_Clip1, 0);			
 				SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, LR_Player_Guard, view_as<int>(Block_Global1));
-				if (gShadow_SendGlobalMsgs)
+				if (gH_Cvar_SendGlobalMsgs.BoolValue)
 				{
 					CPrintToChatAll("%s %t", ChatBanner, "Randomly Chose First Player", LR_Player_Prisoner);
 				}
@@ -4344,12 +3810,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_GunToss:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -4416,12 +3882,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_ChickenFight:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -4439,12 +3905,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_HotPotato:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -4505,10 +3971,10 @@ void InitializeGame(int iPartnersIndex)
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, uniqueID, view_as<int>(Block_Global3));
 			
 			// create timer to end hot potato
-			float rndEnd = GetRandomFloat(gShadow_LR_HotPotato_MinTime, gShadow_LR_HotPotato_MaxTime);
+			float rndEnd = GetRandomFloat(gH_Cvar_LR_HotPotato_MinTime.FloatValue, gH_Cvar_LR_HotPotato_MaxTime.FloatValue);
 			CreateTimer(rndEnd, Timer_HotPotatoDone, uniqueID, TIMER_FLAG_NO_MAPCHANGE);
 
-			if (gShadow_LR_HotPotato_Mode == 2)
+			if (gH_Cvar_LR_HotPotato_Mode.IntValue == 2)
 			{
 				SetEntityMoveType(LR_Player_Prisoner, MOVETYPE_NONE);
 				SetEntityMoveType(LR_Player_Guard, MOVETYPE_NONE);
@@ -4518,7 +3984,7 @@ void InitializeGame(int iPartnersIndex)
 			}
 			else
 			{
-				if (gShadow_LR_HotPotato_Mode == 1)
+				if (gH_Cvar_LR_HotPotato_Mode.IntValue == 1)
 				{
 					if (gShadow_NoBlock)
 					{
@@ -4528,11 +3994,11 @@ void InitializeGame(int iPartnersIndex)
 					TeleportEntity(LR_Player_Guard, p2pos, f_GuardDirection, NULL_VECTOR);
 				}
 				
-				SetEntPropFloat(LR_Player_Prisoner, Prop_Data, "m_flLaggedMovementValue", gShadow_LR_HotPotato_Speed);				
+				SetEntPropFloat(LR_Player_Prisoner, Prop_Data, "m_flLaggedMovementValue", gH_Cvar_LR_HotPotato_Speed.FloatValue);				
 			}
 			TeleportEntity(HPdeagle, p1pos, NULL_VECTOR, NULL_VECTOR);
 			
-			if (gShadow_LR_Beacons)
+			if (gH_Cvar_LR_Beacons.BoolValue)
 			{
 				AddBeacon(HPdeagle);
 			}
@@ -4542,12 +4008,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_Dodgeball:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -4572,11 +4038,11 @@ void InitializeGame(int iPartnersIndex)
 			GivePlayerItem(LR_Player_Guard, "weapon_flashbang");
 			GivePlayerItem(LR_Player_Prisoner, "weapon_flashbang");
 
-			SetEntityGravity(LR_Player_Prisoner, gShadow_LR_Dodgeball_Gravity);
-			SetEntityGravity(LR_Player_Guard, gShadow_LR_Dodgeball_Gravity);
+			SetEntityGravity(LR_Player_Prisoner, gH_Cvar_LR_Dodgeball_Gravity.FloatValue);
+			SetEntityGravity(LR_Player_Guard, gH_Cvar_LR_Dodgeball_Gravity.FloatValue);
 			
 			// timer making sure DB contestants stay @ 1 HP (if enabled by cvar)
-			if ((g_DodgeballTimer == INVALID_HANDLE) && gShadow_LR_Dodgeball_CheatCheck)
+			if ((g_DodgeballTimer == INVALID_HANDLE) && gH_Cvar_LR_Dodgeball_CheatCheck.BoolValue)
 			{
 				g_DodgeballTimer = CreateTimer(1.0, Timer_DodgeballCheckCheaters, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
@@ -4586,12 +4052,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_NoScope:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -4600,7 +4066,7 @@ void InitializeGame(int iPartnersIndex)
 			GivePlayerItem(LR_Player_Guard, "weapon_knife");
 
 			NoScopeWeapon WeaponChoice;
-			switch (gShadow_LR_NoScope_Weapon)
+			switch (gH_Cvar_LR_NoScope_Weapon.IntValue)
 			{
 				case 0:
 				{
@@ -4628,9 +4094,9 @@ void InitializeGame(int iPartnersIndex)
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, WeaponChoice, view_as<int>(Block_Global2));
 			
 			CPrintToChatAll("%s %t", ChatBanner, "LR NS Start", LR_Player_Prisoner, LR_Player_Guard);
-			if (gShadow_LR_NoScope_Delay > 0)
+			if (gH_Cvar_LR_NoScope_Delay.IntValue > 0)
 			{
-				SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, gShadow_LR_NoScope_Delay, view_as<int>(Block_Global1));
+				SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, gH_Cvar_LR_NoScope_Delay.IntValue, view_as<int>(Block_Global1));
 				if (g_CountdownTimer == INVALID_HANDLE)
 				{
 					g_CountdownTimer = CreateTimer(1.0, Timer_Countdown, iPartnersIndex, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -4689,6 +4155,19 @@ void InitializeGame(int iPartnersIndex)
 				Picked_NSW[LR_Player_Prisoner] = NSW_Prisoner;
 				Picked_NSW[LR_Player_Guard] = NSW_Guard;
 				
+				if (gH_Cvar_LR_Debug_Enabled.BoolValue)
+				{
+					char sWeaponName[32], sWeaponNameB[32];
+				
+					GetEntityClassname(NSW_Guard, sWeaponName, sizeof(sWeaponName));
+					ReplaceString(sWeaponName, sizeof(sWeaponName), "weapon_", "");
+					
+					GetEntityClassname(NSW_Prisoner, sWeaponNameB, sizeof(sWeaponNameB));
+					ReplaceString(sWeaponNameB, sizeof(sWeaponNameB), "weapon_", "");
+					
+					LogToFileEx(gShadow_Hosties_LogFile, "NoScope choosen weapon is T:'%s' | CT:'%s'", sWeaponName, sWeaponNameB);
+				}
+				
 				SetEntPropEnt(LR_Player_Prisoner, Prop_Send, "m_hActiveWeapon", NSW_Prisoner);
 				SetEntPropEnt(LR_Player_Guard, Prop_Send, "m_hActiveWeapon", NSW_Guard);
 				SetEntData(NSW_Prisoner, g_Offset_Clip1, 99);
@@ -4698,9 +4177,11 @@ void InitializeGame(int iPartnersIndex)
 				SetEntDataFloat(NSW_Prisoner, g_Offset_SecAttack, 5000.0);
 				SetEntDataFloat(NSW_Guard, g_Offset_SecAttack, 5000.0);
 				
-				if ((strlen(gShadow_LR_NoScope_Sound) > 0) && !StrEqual(gShadow_LR_NoScope_Sound, "-1"))
+				char buffer[PLATFORM_MAX_PATH];
+				gH_Cvar_LR_NoScope_Sound.GetString(buffer, sizeof(buffer));
+				if ((strlen(buffer) > 0) && !StrEqual(buffer, "-1"))
 				{
-					EmitSoundToAllAny(gShadow_LR_NoScope_Sound);
+					EmitSoundToAllAny(buffer);
 				}			
 			}
 		}
@@ -4794,12 +4275,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_Mag4Mag:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -4952,8 +4433,8 @@ void InitializeGame(int iPartnersIndex)
 			if (m4mPlayerFirst == 0)
 			{
 				SetEntData(Pistol_Prisoner, g_Offset_Clip1, 0);
-				SetEntData(Pistol_Guard, g_Offset_Clip1, gShadow_LR_M4M_MagCapacity);
-				if (gShadow_SendGlobalMsgs)
+				SetEntData(Pistol_Guard, g_Offset_Clip1, gH_Cvar_LR_M4M_MagCapacity.IntValue);
+				if (gH_Cvar_SendGlobalMsgs.BoolValue)
 				{
 					CPrintToChatAll("%s %t", ChatBanner, "Randomly Chose First Player", LR_Player_Guard);
 				}
@@ -4966,9 +4447,9 @@ void InitializeGame(int iPartnersIndex)
 			}
 			else
 			{
-				SetEntData(Pistol_Prisoner, g_Offset_Clip1, gShadow_LR_M4M_MagCapacity);
+				SetEntData(Pistol_Prisoner, g_Offset_Clip1, gH_Cvar_LR_M4M_MagCapacity.IntValue);
 				SetEntData(Pistol_Guard, g_Offset_Clip1, 0);			
-				if (gShadow_SendGlobalMsgs)
+				if (gH_Cvar_SendGlobalMsgs.BoolValue)
 				{
 					CPrintToChatAll("%s %t", ChatBanner, "Randomly Chose First Player", LR_Player_Prisoner);
 				}
@@ -4994,12 +4475,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_Race:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -5040,12 +4521,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_RussianRoulette:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -5083,7 +4564,7 @@ void InitializeGame(int iPartnersIndex)
 			{
 				SetEntData(Pistol_Prisoner, g_Offset_Clip1, 0);
 				SetEntData(Pistol_Guard, g_Offset_Clip1, 1);
-				if (gShadow_SendGlobalMsgs)
+				if (gH_Cvar_SendGlobalMsgs.BoolValue)
 				{
 					CPrintToChatAll("%s %t", ChatBanner, "Randomly Chose First Player", LR_Player_Guard);
 				}
@@ -5097,7 +4578,7 @@ void InitializeGame(int iPartnersIndex)
 			{
 				SetEntData(Pistol_Prisoner, g_Offset_Clip1, 1);
 				SetEntData(Pistol_Guard, g_Offset_Clip1, 0);
-				if (gShadow_SendGlobalMsgs)
+				if (gH_Cvar_SendGlobalMsgs.BoolValue)
 				{
 					CPrintToChatAll("%s %t", ChatBanner, "Randomly Chose First Player", LR_Player_Prisoner);
 				}
@@ -5123,12 +4604,12 @@ void InitializeGame(int iPartnersIndex)
 		}
 		case LR_JumpContest:
 		{
-			if (gShadow_LR_RestoreWeapon_T == 1)
+			if (gH_Cvar_LR_RestoreWeapon_T.BoolValue)
 				SaveWeapons(LR_Player_Prisoner);
 			else
 				StripAllWeapons(LR_Player_Prisoner);
 				
-			if (gShadow_LR_RestoreWeapon_CT == 1)
+			if (gH_Cvar_LR_RestoreWeapon_CT.BoolValue)
 				SaveWeapons(LR_Player_Guard);
 			else
 				StripAllWeapons(LR_Player_Guard);
@@ -5226,8 +4707,8 @@ void InitializeGame(int iPartnersIndex)
 		}
 	}
 	
-	StripZeus[LR_Player_Prisoner] = CreateTimer(0.3, Timer_StripZeus, LR_Player_Prisoner, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	StripZeus[LR_Player_Guard] = CreateTimer(0.3, Timer_StripZeus, LR_Player_Guard, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.3, Timer_StripZeus, LR_Player_Prisoner, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.3, Timer_StripZeus, LR_Player_Guard, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	
 	if(IsLastRequestAutoStart(selection))
 	{
@@ -5247,37 +4728,45 @@ void InitializeGame(int iPartnersIndex)
 		}
 		gH_BuildLR[LR_Player_Prisoner] = null;
 		
-		if(g_Game == Game_CSGO)
+		
+		if (IsClientInGame(LR_Player_Prisoner) && IsPlayerAlive(LR_Player_Prisoner))
 		{
-			if (IsClientInGame(LR_Player_Prisoner) && IsPlayerAlive(LR_Player_Prisoner))
+			if (selection != LR_Rebel && (selection == LR_ChickenFight || selection == LR_Dodgeball || selection == LR_GunToss ||
+				selection == LR_HotPotato || selection == LR_JumpContest || selection == LR_KnifeFight || selection == LR_Mag4Mag ||
+				selection == LR_NoScope || selection == LR_Race || selection == LR_Shot4Shot))
 			{
-				if (selection != LR_Rebel && (selection == LR_ChickenFight || selection == LR_Dodgeball || selection == LR_GunToss ||
-					selection == LR_HotPotato || selection == LR_JumpContest || selection == LR_KnifeFight || selection == LR_Mag4Mag ||
-					selection == LR_NoScope || selection == LR_Race || selection == LR_Shot4Shot))
+				SetEntityHealth(LR_Player_Prisoner, 100);
+			
+				SetEntProp(LR_Player_Prisoner, Prop_Send, "m_bHasHelmet", 0);
+				SetEntProp(LR_Player_Prisoner, Prop_Send, "m_ArmorValue", 0, 0);
+				
+				if(g_Game == Game_CSGO)
 				{
-					SetEntityHealth(LR_Player_Prisoner, 100);
 					RemoveDangerZone(LR_Player_Prisoner);
 				
-					SetEntProp(LR_Player_Prisoner, Prop_Send, "m_bHasHelmet", 0);
 					SetEntProp(LR_Player_Prisoner, Prop_Send, "m_bHasHeavyArmor", 0);
 					SetEntProp(LR_Player_Prisoner, Prop_Send, "m_bWearingSuit", 0);
-					SetEntProp(LR_Player_Prisoner, Prop_Send, "m_ArmorValue", 0, 0);
 				}
 			}
-			
-			if (IsClientInGame(LR_Player_Guard) && IsPlayerAlive(LR_Player_Guard))
+		}
+		
+		if (IsClientInGame(LR_Player_Guard) && IsPlayerAlive(LR_Player_Guard))
+		{
+			if (selection != LR_Rebel && (selection == LR_ChickenFight || selection == LR_Dodgeball || selection == LR_GunToss ||
+				selection == LR_HotPotato || selection == LR_JumpContest || selection == LR_KnifeFight || selection == LR_Mag4Mag ||
+				selection == LR_NoScope || selection == LR_Race || selection == LR_Shot4Shot))
 			{
-				if (selection != LR_Rebel && (selection == LR_ChickenFight || selection == LR_Dodgeball || selection == LR_GunToss ||
-					selection == LR_HotPotato || selection == LR_JumpContest || selection == LR_KnifeFight || selection == LR_Mag4Mag ||
-					selection == LR_NoScope || selection == LR_Race || selection == LR_Shot4Shot))
+				SetEntityHealth(LR_Player_Guard, 100);
+			
+				SetEntProp(LR_Player_Guard, Prop_Send, "m_bHasHelmet", 0);
+				SetEntProp(LR_Player_Guard, Prop_Send, "m_ArmorValue", 0, 0);
+				
+				if(g_Game == Game_CSGO)
 				{
-					SetEntityHealth(LR_Player_Guard, 100);					
 					RemoveDangerZone(LR_Player_Guard);
-
-					SetEntProp(LR_Player_Guard, Prop_Send, "m_bHasHelmet", 0);
+				
 					SetEntProp(LR_Player_Guard, Prop_Send, "m_bHasHeavyArmor", 0);
 					SetEntProp(LR_Player_Guard, Prop_Send, "m_bWearingSuit", 0);
-					SetEntProp(LR_Player_Guard, Prop_Send, "m_ArmorValue", 0, 0);
 				}
 			}
 		}
@@ -5467,7 +4956,7 @@ public Action Timer_Beacon(Handle timer)
 	}
 	iTimerCount++;
 	
-	if (gShadow_LR_HelpBeams)
+	if (gH_Cvar_LR_HelpBeams.BoolValue)
 	{
 		for (int LRindex = 0; LRindex < GetArraySize(gH_DArray_LR_Partners); LRindex++)
 		{
@@ -5490,7 +4979,7 @@ public Action Timer_Beacon(Handle timer)
 				Guard_Pos[2] -= 40.0;
 				distance = GetVectorDistance(Prisoner_Pos, Guard_Pos);
 				
-				if (distance > gShadow_LR_HelpBeams_Distance)
+				if (distance > gH_Cvar_LR_HelpBeams_Distance.FloatValue)
 				{
 					TE_SetupBeamPoints(Prisoner_Pos, Guard_Pos, LaserSprite, LaserHalo, 1, 1, 0.1, 5.0, 5.0, 0, 10.0, greyColor, 255);			
 					TE_Send(clients, 2);
@@ -5500,7 +4989,7 @@ public Action Timer_Beacon(Handle timer)
 			}
 		}
 	}
-	int modTime = RoundToCeil(10.0 * gShadow_LR_Beacon_Interval);
+	int modTime = RoundToCeil(10.0 * gH_Cvar_LR_Beacon_Interval.FloatValue);
 	if ((iTimerCount % modTime) == 0)
 	{
 		int iEntityIndex;
@@ -5534,7 +5023,9 @@ public Action Timer_Beacon(Handle timer)
 					TE_SetupBeamRingPoint(f_Origin, 10.0, 375.0, BeamSprite, HaloSprite, 0, 10, 0.6, 10.0, 0.5, yellowColor, 10, 0);
 					TE_SendToAll();
 				}
-				EmitAmbientSoundAny(gShadow_LR_Beacon_Sound, f_Origin, iEntityIndex, SNDLEVEL_RAIDSIREN);	
+				char buffer[PLATFORM_MAX_PATH];
+				gH_Cvar_LR_Beacon_Sound.GetString(buffer, sizeof(buffer));
+				EmitAmbientSoundAny(buffer, f_Origin, iEntityIndex, SNDLEVEL_RAIDSIREN);	
 			}
 			else
 			{
@@ -5610,7 +5101,7 @@ public void OnEntitySpawned(int entity)
 public Action Timer_RemoveThinkTick(Handle timer, any entity)
 {
 	SetEntProp(entity, Prop_Data, "m_nNextThinkTick", -1);
-	CreateTimer(gShadow_LR_Dodgeball_SpawnTime, Timer_RemoveFlashbang, entity, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(gH_Cvar_LR_Dodgeball_SpawnTime.FloatValue, Timer_RemoveFlashbang, entity, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action Timer_RemoveFlashbang(Handle timer, any entity)
@@ -5658,7 +5149,7 @@ public Action Timer_Countdown(Handle timer)
 			SetArrayCell(gH_DArray_LR_Partners, idx, --countdown, view_as<int>(Block_Global1));
 			
 			// set up laser beams for race points
-			if (type == LR_Race && gShadow_LR_Race_NotifyCTs)
+			if (type == LR_Race && gH_Cvar_LR_Race_NotifyCTs.BoolValue)
 			{
 				float LR_Prisoner_Position[3], f_EndLocation[3];
 				Handle PositionPack = GetArrayCell(gH_DArray_LR_Partners, idx, 9);
@@ -5767,11 +5258,13 @@ public Action Timer_Countdown(Handle timer)
 					SetEntDataFloat(NSW_Prisoner, g_Offset_SecAttack, 5000.0);
 					SetEntDataFloat(NSW_Guard, g_Offset_SecAttack, 5000.0);
 					
-					if ((strlen(gShadow_LR_NoScope_Sound) > 0) && !StrEqual(gShadow_LR_NoScope_Sound, "-1"))
+					char buffer[PLATFORM_MAX_PATH];
+					gH_Cvar_LR_NoScope_Sound.GetString(buffer, sizeof(buffer));
+					if ((strlen(buffer) > 0) && !StrEqual(buffer, "-1"))
 					{
 						if (g_Game == Game_CSS)
 						{
-							EmitSoundToAll(gShadow_LR_NoScope_Sound);
+							EmitSoundToAll(buffer);
 						}
 						else
 						{
@@ -5780,7 +5273,7 @@ public Action Timer_Countdown(Handle timer)
 							{
 								if (IsClientInGame(idx2))
 								{
-									Format(sCommand, sizeof(sCommand), "play *%s", gShadow_LR_NoScope_Sound);
+									Format(sCommand, sizeof(sCommand), "play *%s", buffer);
 									ClientCommand(idx2, sCommand);
 								}
 							}
@@ -5930,7 +5423,7 @@ public int RPSmenuHandler(Handle menu, MenuAction action, int client, int param2
 						{
 							if (client == LR_Player_Prisoner)
 							{
-								if (gShadow_SendGlobalMsgs)
+								if (gH_Cvar_SendGlobalMsgs.BoolValue)
 								{
 									CPrintToChatAll("%s %t", ChatBanner, "LR RPS Tie", LR_Player_Prisoner, RPSc2, LR_Player_Guard, RPSc1);
 								}
@@ -5942,7 +5435,7 @@ public int RPSmenuHandler(Handle menu, MenuAction action, int client, int param2
 							}
 							else
 							{
-								if (gShadow_SendGlobalMsgs)
+								if (gH_Cvar_SendGlobalMsgs.BoolValue)
 								{
 									CPrintToChatAll("%s %t", ChatBanner, "LR RPS Tie", LR_Player_Guard, RPSc1, LR_Player_Prisoner, RPSc2);
 								}
@@ -6095,7 +5588,7 @@ public Action Timer_HotPotatoDone(Handle timer, any HotPotato_ID)
 				KillAndReward(HPloser, HPwinner);
 				CPrintToChatAll("%s %t", ChatBanner, "HP Win", HPwinner, HPloser);
 				
-				if (gShadow_LR_HotPotato_Mode != 2)
+				if (gH_Cvar_LR_HotPotato_Mode.IntValue != 2)
 				{
 					SetEntPropFloat(HPwinner, Prop_Data, "m_flLaggedMovementValue", 1.0);
 				}
@@ -6184,7 +5677,7 @@ public Action Timer_GunToss(Handle timer)
 					{
 						float fBeamWidth = (g_Game == Game_CSS ? 10.0 : 2.0);
 						float fRefreshRate = (g_Game == Game_CSS ? 0.1 : 1.0);
-						switch (gShadow_LR_GunToss_MarkerMode)
+						switch (gH_Cvar_LR_GunToss_MarkerMode.IntValue)
 						{
 							case 0:
 							{
@@ -6233,7 +5726,7 @@ public Action Timer_GunToss(Handle timer)
 					{
 						float fBeamWidth = (g_Game == Game_CSS ? 10.0 : 2.0);
 						float fRefreshRate = (g_Game == Game_CSS ? 0.1 : 1.0);
-						switch (gShadow_LR_GunToss_MarkerMode)
+						switch (gH_Cvar_LR_GunToss_MarkerMode.IntValue)
 						{
 							case 0:
 							{
@@ -6256,7 +5749,7 @@ public Action Timer_GunToss(Handle timer)
 				int LR_Player_Guard = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_Guard));
 				
 				// broadcast distance
-				if (gShadow_LR_GunToss_ShowMeter)
+				if (gH_Cvar_LR_GunToss_ShowMeter.IntValue)
 				{
 					if (GTp2dropped)
 					{
@@ -6276,7 +5769,7 @@ public Action Timer_GunToss(Handle timer)
 						f_DoneDistance[LR_Player_Prisoner] = 0.0;
 					}
 
-					if (!gShadow_SendGlobalMsgs)
+					if (!gH_Cvar_SendGlobalMsgs.BoolValue)
 					{
 						if (g_Game == Game_CSS)
 						{
@@ -6305,7 +5798,7 @@ public Action Timer_GunToss(Handle timer)
 		}
 	}
 	
-	if (gShadow_LR_GunToss_ShowMeter && gShadow_SendGlobalMsgs && (iNumGunTosses > 0))
+	if (gH_Cvar_LR_GunToss_ShowMeter.IntValue && gH_Cvar_SendGlobalMsgs.BoolValue && (iNumGunTosses > 0))
 	{
 		PrintHintTextToAll("%t %s", "Distance Meter", sHintTextGlobal);
 	}
@@ -6338,7 +5831,7 @@ public Action Timer_ChickenFight(Handle timer)
 				
 				if (p1EntityBelow == LR_Player_Guard)
 				{
-					if (gShadow_LR_ChickenFight_Slay)
+					if (gH_Cvar_LR_ChickenFight_Slay.BoolValue)
 					{
 						CPrintToChatAll("%s %t", ChatBanner, "Chicken Fight Win And Slay", LR_Player_Prisoner, LR_Player_Guard);
 						KillAndReward(LR_Player_Guard, LR_Player_Prisoner);
@@ -6350,15 +5843,15 @@ public Action Timer_ChickenFight(Handle timer)
 						
 						GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
 						
-						SetEntityRenderColor(LR_Player_Guard, gShadow_LR_ChickenFight_C_Red, gShadow_LR_ChickenFight_C_Green,
-							gShadow_LR_ChickenFight_C_Blue, 255);
+						SetEntityRenderColor(LR_Player_Guard, gH_Cvar_LR_ChickenFight_C_Red.IntValue, gH_Cvar_LR_ChickenFight_C_Green.IntValue,
+							gH_Cvar_LR_ChickenFight_C_Blue.IntValue, 255);
 							
 						bIsChickenFight = false;
 					}
 				}
 				else if (p2EntityBelow == LR_Player_Prisoner)
 				{
-					if (gShadow_LR_ChickenFight_Slay)
+					if (gH_Cvar_LR_ChickenFight_Slay.BoolValue)
 					{
 						CPrintToChatAll("%s %t", ChatBanner, "Chicken Fight Win And Slay", LR_Player_Guard, LR_Player_Prisoner);
 						KillAndReward(LR_Player_Prisoner, LR_Player_Guard);
@@ -6370,8 +5863,8 @@ public Action Timer_ChickenFight(Handle timer)
 						
 						GivePlayerItem(LR_Player_Guard, "weapon_knife");
 						
-						SetEntityRenderColor(LR_Player_Prisoner, gShadow_LR_ChickenFight_C_Red, gShadow_LR_ChickenFight_C_Green,
-							gShadow_LR_ChickenFight_C_Blue, 255);
+						SetEntityRenderColor(LR_Player_Prisoner, gH_Cvar_LR_ChickenFight_C_Red.IntValue, gH_Cvar_LR_ChickenFight_C_Green.IntValue,
+							gH_Cvar_LR_ChickenFight_C_Blue.IntValue, 255);
 							
 						bIsChickenFight = false;
 					}
@@ -6394,7 +5887,7 @@ void DecideRebelsFate(int rebeller, int LRIndex, int victim = 0)
 	int iClientWeapon = GetEntDataEnt2(rebeller, g_Offset_ActiveWeapon);
 	if (IsValidEdict(iClientWeapon))
 	{
-		GetEdictClassname(iClientWeapon, sWeaponName, sizeof(sWeaponName));
+		GetEntityClassname(iClientWeapon, sWeaponName, sizeof(sWeaponName));
 		ReplaceString(sWeaponName, sizeof(sWeaponName), "weapon_", "");
 	}
 	else
@@ -6409,19 +5902,19 @@ void DecideRebelsFate(int rebeller, int LRIndex, int victim = 0)
 	{
 		case LR_KnifeFight:
 		{
-			rebelAction = gShadow_LR_KnifeFight_Rebel+1;
+			rebelAction = gH_Cvar_LR_KnifeFight_Rebel.IntValue+1;
 		}
 		case LR_ChickenFight:
 		{
-			rebelAction = gShadow_LR_ChickenFight_Rebel+1;
+			rebelAction = gH_Cvar_LR_ChickenFight_Rebel.IntValue+1;
 		}
 		case LR_HotPotato:
 		{
-			rebelAction = gShadow_LR_HotPotato_Rebel+1;
+			rebelAction = gH_Cvar_LR_HotPotato_Rebel.IntValue+1;
 		}		
 		default:
 		{
-			rebelAction = gShadow_RebelAction;
+			rebelAction = gH_Cvar_RebelAction.IntValue;
 		}
 	}
 	
@@ -6500,7 +5993,7 @@ public Action Timer_BeerGoggles(Handle timer)
 	}
 	
 	float vecPunch[3];
-	float drunkMultiplier = float(gShadow_LR_KnifeFight_Drunk);
+	float drunkMultiplier = float(gH_Cvar_LR_KnifeFight_Drunk.IntValue);
 	
 	int iArraySize = GetArraySize(gH_DArray_LR_Partners);
 	if (iArraySize == 0)
@@ -6573,7 +6066,7 @@ void KillAndReward(int loser, int victor)
 		if (g_Game == Game_CSS)
 		{
 			int iFrags = GetEntProp(victor, Prop_Data, "m_iFrags");
-			iFrags += gShadow_LR_VictorPoints;
+			iFrags += gH_Cvar_LR_VictorPoints.IntValue;
 			SetEntProp(victor, Prop_Data, "m_iFrags", iFrags);
 		}
 		else if (g_Game == Game_CSGO)
@@ -6582,7 +6075,7 @@ void KillAndReward(int loser, int victor)
 			if (iResourceEntity != -1)
 			{
 				int iScore = GetEntProp(iResourceEntity, Prop_Send, "m_iScore", _, victor);
-				iScore += gShadow_LR_VictorPoints*2;
+				iScore += gH_Cvar_LR_VictorPoints.IntValue*2;
 				SetEntProp(iResourceEntity, Prop_Send, "m_iScore", iScore, _, victor);
 			}
 		}
@@ -6655,18 +6148,19 @@ void GetLastButton(int client, int &buttons, int idx)
 
 public Action Timer_StripZeus(Handle timer, int client)
 {
-	if (StripZeus[client] != null && IsValidClient(client))
-	{	
-		int TaserAmmo = Client_GetWeaponPlayerAmmo(client, "weapon_taser");
-		if (TaserAmmo != 0)
+	if (!IsValidClient(client) || !IsClientInLastRequest(client)) return Plugin_Stop;
+	
+	int TaserAmmo = Client_GetWeaponPlayerAmmo(client, "weapon_taser");
+	if (TaserAmmo != 0)
+	{
+		Client_RemoveWeapon(client, "weapon_taser", false);
+		
+		if (gH_Cvar_LR_Debug_Enabled.BoolValue)
 		{
-			Client_RemoveWeapon(client, "weapon_taser", false);
+			LogToFileEx(gShadow_Hosties_LogFile, "%L stripped from a Zeus - [lastrequest.sp - Timer_StripZeus]", client);
 		}
 	}
-	else
-	{
-		return Plugin_Stop;
-	}
+	
 	return Plugin_Continue;
 }
 
@@ -6760,13 +6254,16 @@ public Action LastRequest_PlayerSpawn(Event event, const char[] name, bool dontB
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	SetCorrectPlayerColor(client);
 	
-	ConVar Cvar_TeamBlock = FindConVar("mp_solid_teammates");
-	int TeamBlock = GetConVarInt(Cvar_TeamBlock);
-	
-	if (TeamBlock == 1 || TeamBlock == 2)
-		BlockEntity(client, g_Offset_CollisionGroup);
-	else
-		UnblockEntity(client, g_Offset_CollisionGroup);
+	if (g_Game == Game_CSGO)
+	{
+		ConVar Cvar_TeamBlock = FindConVar("mp_solid_teammates");
+		int TeamBlock = GetConVarInt(Cvar_TeamBlock);
+		
+		if (TeamBlock == 1 || TeamBlock == 2)
+			BlockEntity(client, g_Offset_CollisionGroup);
+		else
+			UnblockEntity(client, g_Offset_CollisionGroup);
+	}
 }
 
 void SetCorrectPlayerColor(int client)
@@ -6776,9 +6273,9 @@ void SetCorrectPlayerColor(int client)
 		return;
 	}
 
-	if (g_bIsARebel[client] && gShadow_ColorRebels)
+	if (g_bIsARebel[client] && gH_Cvar_ColorRebels.IntValue)
 	{
-		SetEntityRenderColor(client, gShadow_ColorRebels_Red, gShadow_ColorRebels_Green, gShadow_ColorRebels_Blue, 255);
+		SetEntityRenderColor(client, gH_Cvar_ColorRebels_Red.IntValue, gH_Cvar_ColorRebels_Green.IntValue, gH_Cvar_ColorRebels_Blue.IntValue, 255);
 	}
 	else
 	{

@@ -38,7 +38,7 @@
 #pragma 	semicolon 					1
 
 // Constants
-#define 	PLUGIN_VERSION				"3.1.18b"
+#define 	PLUGIN_VERSION				"4.0b"
 #define 	MAX_DISPLAYNAME_SIZE		64
 #define 	MAX_DATAENTRY_SIZE			5
 #define 	SERVERTAG					"ENT_Hosties,LR,LastRequest,ENT,Hosties"
@@ -47,6 +47,8 @@
 
 // Add ability to disable collisions for players
 #define	MODULE_NOBLOCK						1
+// Add ability to disable collisions for players
+#define	MODULE_ANTIHEAL						1
 // Add the last request system
 #define	MODULE_LASTREQUEST					1
 // Add a game description override
@@ -81,7 +83,7 @@ Handle gH_TopMenu = INVALID_HANDLE;
 TopMenuObject gM_Hosties = INVALID_TOPMENUOBJECT;
 
 char gShadow_Hosties_LogFile[PLATFORM_MAX_PATH];
-Handle gH_Cvar_LR_Debug_Enabled = INVALID_HANDLE;
+ConVar gH_Cvar_LR_Debug_Enabled;
 bool gShadow_LR_Debug_Enabled = false;
 
 #if (MODULE_FREEKILL == 1)
@@ -100,6 +102,9 @@ bool gShadow_Freekill_Notify;
 int gA_FreekillsOfCT[MAXPLAYERS+1];
 #endif
 
+#if (MODULE_ANTIHEAL == 1)
+#include "hosties/antiheal.sp"
+#endif
 #if (MODULE_NOBLOCK == 1)
 #include "hosties/noblock.sp"
 #endif
@@ -135,9 +140,9 @@ int gA_FreekillsOfCT[MAXPLAYERS+1];
 #endif
 
 // ConVars
-Handle gH_Cvar_Add_ServerTag = INVALID_HANDLE;
-Handle gH_Cvar_Display_Advert = INVALID_HANDLE;
-Handle gH_Cvar_ChatTag = INVALID_HANDLE;
+ConVar gH_Cvar_Add_ServerTag;
+ConVar gH_Cvar_Display_Advert;
+ConVar gH_Cvar_ChatTag;
 
 public Plugin myinfo =
 {
@@ -167,12 +172,22 @@ public void OnPluginStart()
 	GetConVarString(gH_Cvar_ChatTag, Temp, sizeof(Temp));
 	Format(ChatBanner, sizeof(ChatBanner), "%s {lime}", Temp);
 	
+	//Double team fix
+	if (StrEqual(ChatBanner, "{red}"))
+		ReplaceString(ChatBanner, sizeof(ChatBanner), "{red}", "\x02");	
+		
+	if (StrEqual(ChatBanner, "{blue}"))
+		ReplaceString(ChatBanner, sizeof(ChatBanner), "{blue}", "\x0C");	
+	
 	CreateConVar("sm_hosties_version", PLUGIN_VERSION, "SM_Hosties plugin version (unchangeable)", 0|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	
 	RegAdminCmd("sm_hostiesadmin", Command_HostiesAdmin, ADMFLAG_SLAY);
 	
 	#if (MODULE_STARTWEAPONS == 1)
 	StartWeapons_OnPluginStart();
+	#endif
+	#if (MODULE_ANTIHEAL == 1)
+	Antiheal_OnPluginStart();
 	#endif
 	#if (MODULE_NOBLOCK == 1)
 	NoBlock_OnPluginStart();
@@ -400,6 +415,13 @@ public void OnAdminMenuReady(Handle h_TopMenu)
 public void OnCvarChange_ChatTag(ConVar cvar, char[] oldvalue, char[] newvalue)
 {
 	Format(ChatBanner, sizeof(ChatBanner), "%s {lime}", newvalue);
+	
+	//Double team fix
+	if (StrEqual(ChatBanner, "{red}"))
+		ReplaceString(ChatBanner, sizeof(ChatBanner), "{red}", "\x02");	
+		
+	if (StrEqual(ChatBanner, "{blue}"))
+		ReplaceString(ChatBanner, sizeof(ChatBanner), "{blue}", "\x0C");	
 }
 
 public Action Command_HostiesAdmin(int client, int args)
