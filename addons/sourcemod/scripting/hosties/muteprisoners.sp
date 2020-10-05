@@ -27,35 +27,20 @@
 #define REQUIRE_PLUGIN
 #include <hosties>
 
-Handle gH_Cvar_MuteStatus = INVALID_HANDLE;
-int gShadow_MuteStatus;
-Handle gH_Cvar_MuteLength = INVALID_HANDLE;
-float gShadow_MuteLength;
+ConVar gH_Cvar_MuteStatus;
+ConVar gH_Cvar_MuteLength;
+ConVar gH_Cvar_MuteImmune;
+ConVar gH_Cvar_MuteCT;
 Handle gH_Timer_Unmuter = INVALID_HANDLE;
-Handle gH_Cvar_MuteImmune = INVALID_HANDLE;
-char gShadow_MuteImmune[37];
-Handle gH_Cvar_MuteCT = INVALID_HANDLE;
-bool gShadow_MuteCT = false;
+
 int gAdmFlags_MuteImmunity = 0;
 
 void MutePrisoners_OnPluginStart()
 {
-	gH_Cvar_MuteStatus = CreateConVar("sm_hosties_mute", "1", "Setting for muting terrorists automatically: 0 - disable, 1 - terrorists are muted the first few seconds of a round, 2 - terrorists are muted when they die, 3 - both", 0, true, 0.0, true, 3.0);
-	gShadow_MuteStatus = 0;
-	
-	gH_Cvar_MuteLength = CreateConVar("sm_hosties_roundstart_mute", "30.0", "The length of time the Terrorist team is muted for after the round begins", 0, true, 3.0, true, 90.0);
-	gShadow_MuteLength = 30.0;
-	
-	gH_Cvar_MuteImmune = CreateConVar("sm_hosties_mute_immune", "z", "Admin flags which are immune from getting muted: 0 - nobody, 1 - all admins, flag values: abcdefghijklmnopqrst");
-	Format(gShadow_MuteImmune, sizeof(gShadow_MuteImmune), "z");
-	
+	gH_Cvar_MuteStatus = CreateConVar("sm_hosties_mute", "1", "Setting for muting terrorists automatically: 0 - disable, 1 - terrorists are muted the first few seconds of a round, 2 - terrorists are muted when they die, 3 - both", 0, true, 0.0, true, 3.0);	
+	gH_Cvar_MuteLength = CreateConVar("sm_hosties_roundstart_mute", "30.0", "The length of time the Terrorist team is muted for after the round begins", 0, true, 3.0, true, 90.0);	
+	gH_Cvar_MuteImmune = CreateConVar("sm_hosties_mute_immune", "z", "Admin flags which are immune from getting muted: 0 - nobody, 1 - all admins, flag values: abcdefghijklmnopqrst");	
 	gH_Cvar_MuteCT = CreateConVar("sm_hosties_mute_ct", "0", "Setting for muting counter-terrorists automatically when they die (requires sm_hosties_mute 2 or 3): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gShadow_MuteCT = false;
-	
-	HookConVarChange(gH_Cvar_MuteStatus, MutePrisoners_CvarChanged);
-	HookConVarChange(gH_Cvar_MuteLength, MutePrisoners_CvarChanged);
-	HookConVarChange(gH_Cvar_MuteImmune, MutePrisoners_CvarChanged);
-	HookConVarChange(gH_Cvar_MuteCT, MutePrisoners_CvarChanged);
 	
 	g_Offset_CollisionGroup = FindSendPropInfo("CBaseEntity", "m_CollisionGroup");
 	if (g_Offset_CollisionGroup == -1)
@@ -82,10 +67,6 @@ void MutePrisoners_AllPluginsLoaded()
 
 void MutePrisoners_OnConfigsExecuted()
 {
-	gShadow_MuteStatus = GetConVarInt(gH_Cvar_MuteStatus);
-	gShadow_MuteLength = GetConVarFloat(gH_Cvar_MuteLength);
-	
-	GetConVarString(gH_Cvar_MuteImmune, gShadow_MuteImmune, sizeof(gShadow_MuteImmune));
 	MutePrisoners_CalcImmunity();
 }
 
@@ -97,7 +78,7 @@ stock void MuteTs()
 		{
 			if (!BaseComm_IsClientMuted(i))
 			{
-				UnmutePlayer(i);
+				MutePlayer(i);
 			}
 		}
 	}
@@ -143,46 +124,27 @@ stock void UnmuteAll()
 
 void MutePrisoners_CalcImmunity()
 {
-	if (StrEqual(gShadow_MuteImmune, "0"))
+	char buffer[128];
+	gH_Cvar_MuteImmune.GetString(buffer, sizeof(buffer));
+	if (StrEqual(buffer, "0"))
 	{
 		gAdmFlags_MuteImmunity = 0;
 	}
 	else
 	{
-		if(StrEqual(gShadow_MuteImmune, "1"))
+		if(StrEqual(buffer, "1"))
 		{
 			// include everything but 'a': reservation slot
-			Format(gShadow_MuteImmune, sizeof(gShadow_MuteImmune), "bcdefghijklmnopqrstz");
+			Format(buffer, sizeof(buffer), "bcdefghijklmnopqrstz");
 		}
 		
-		gAdmFlags_MuteImmunity = ReadFlagString(gShadow_MuteImmune);
-	}
-}
-
-public void MutePrisoners_CvarChanged(Handle cvar, const char[] oldValue, const char[] newValue)
-{
-	if (cvar == gH_Cvar_MuteStatus)
-	{
-		gShadow_MuteStatus = StringToInt(newValue);
-	}
-	else if (cvar == gH_Cvar_MuteLength)
-	{
-		gShadow_MuteLength = StringToFloat(newValue);
-	}
-	else if (cvar == gH_Cvar_MuteImmune)
-	{
-		Format(gShadow_MuteImmune, sizeof(gShadow_MuteImmune), newValue);
-		MutePrisoners_CalcImmunity();
-	}
-	else if (cvar == gH_Cvar_MuteCT)
-	{
-		gShadow_MuteCT = view_as<bool>(StringToInt(newValue));
+		gAdmFlags_MuteImmunity = ReadFlagString(buffer);
 	}
 }
 
 public Action MutePrisoners_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	if (gShadow_MuteStatus == 1 || gShadow_MuteStatus == 3)
+	if (gH_Cvar_MuteStatus.IntValue == 1 || gH_Cvar_MuteStatus.IntValue == 3)
 	{
 		// if the timer is anything but invalid, we should mute these new spawners
 		if (gH_Timer_Unmuter != null)
@@ -208,7 +170,7 @@ public Action MutePrisoners_PlayerSpawn(Event event, const char[] name, bool don
 
 public Action MutePrisoners_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	if (gShadow_MuteStatus <= 1)
+	if (gH_Cvar_MuteStatus.IntValue <= 1)
 	{
 		return;
 	}
@@ -226,7 +188,7 @@ public Action MutePrisoners_PlayerDeath(Event event, const char[] name, bool don
 			}
 			case CS_TEAM_CT:
 			{
-				if (gShadow_MuteCT)
+				if (gH_Cvar_MuteCT.BoolValue)
 				{			
 					CreateTimer(0.1, Timer_Mute, victim, TIMER_FLAG_NO_MAPCHANGE);
 				}
@@ -248,7 +210,7 @@ public Action Timer_Mute(Handle timer, any client)
 
 public Action MutePrisoners_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
-	if (gShadow_MuteStatus)
+	if (gH_Cvar_MuteStatus.IntValue)
 	{
 		// Unmute Timer
 		CreateTimer(0.2, Timer_UnmuteAll, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -262,7 +224,7 @@ public Action MutePrisoners_RoundEnd(Event event, const char[] name, bool dontBr
 
 public Action MutePrisoners_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if (gShadow_MuteStatus == 1 || gShadow_MuteStatus == 3)
+	if (gH_Cvar_MuteStatus.IntValue == 1 || gH_Cvar_MuteStatus.IntValue == 3)
 	{
 		if (gAdmFlags_MuteImmunity == 0)
 		{
@@ -281,9 +243,9 @@ public Action MutePrisoners_RoundStart(Event event, const char[] name, bool dont
 			}
 		}
 		
-		CreateTimer(gShadow_MuteLength, Timer_UnmutePrisoners, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(gH_Cvar_MuteLength.FloatValue, Timer_UnmutePrisoners, _, TIMER_FLAG_NO_MAPCHANGE);
 		
-		CPrintToChatAll("%s %t", ChatBanner, "Ts Muted", RoundToNearest(gShadow_MuteLength));
+		CPrintToChatAll("%s %t", ChatBanner, "Ts Muted", RoundToNearest(gH_Cvar_MuteLength.FloatValue));
 	}
 }
 

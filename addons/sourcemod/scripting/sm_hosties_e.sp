@@ -41,7 +41,7 @@
 #define 	PLUGIN_VERSION				"4.0b"
 #define 	MAX_DISPLAYNAME_SIZE		64
 #define 	MAX_DATAENTRY_SIZE			5
-#define 	SERVERTAG					"ENT_Hosties,LR,LastRequest,ENT,Hosties"
+#define 	SERVERTAG					"ENT_Hosties,LR,LastRequest"
 
 // Note: you cannot safely turn these modules on and off yet. Use cvars to disable functionality.
 
@@ -172,7 +172,6 @@ public void OnPluginStart()
 	GetConVarString(gH_Cvar_ChatTag, Temp, sizeof(Temp));
 	Format(ChatBanner, sizeof(ChatBanner), "%s {lime}", Temp);
 	
-	//Double team fix
 	if (StrEqual(ChatBanner, "{red}"))
 		ReplaceString(ChatBanner, sizeof(ChatBanner), "{red}", "\x02");	
 		
@@ -314,7 +313,7 @@ public void OnLibraryRemoved(const char[] name)
 
 public void OnConfigsExecuted()
 {
-	if (GetConVarInt(gH_Cvar_Add_ServerTag) == 1)
+	if (gH_Cvar_Add_ServerTag.BoolValue)
 	{
 		Handle hTags = FindConVar("sv_tags");
 		char sTags[512], sTagsFormat[128];
@@ -375,7 +374,7 @@ public void OnClientPutInServer(int client)
 
 public Action Event_RoundStart(Event event, const char[] name , bool dontBroadcast)
 {
-	if (GetConVarInt(gH_Cvar_Display_Advert))
+	if (gH_Cvar_Display_Advert.BoolValue)
 	{
 		// Print out a messages about SM_Hosties 
 		CPrintToChatAll("%s %t", ChatBanner, "Powered By Hosties");
@@ -416,7 +415,6 @@ public void OnCvarChange_ChatTag(ConVar cvar, char[] oldvalue, char[] newvalue)
 {
 	Format(ChatBanner, sizeof(ChatBanner), "%s {lime}", newvalue);
 	
-	//Double team fix
 	if (StrEqual(ChatBanner, "{red}"))
 		ReplaceString(ChatBanner, sizeof(ChatBanner), "{red}", "\x02");	
 		
