@@ -3935,7 +3935,7 @@ void InitializeGame(int iPartnersIndex)
 			{
 				if (gH_Cvar_LR_HotPotato_Mode.IntValue == 1)
 				{
-					if (gShadow_NoBlock)
+					if (gH_Cvar_NoBlock.BoolValue)
 					{
 						UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
 						UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
@@ -4386,7 +4386,7 @@ void InitializeGame(int iPartnersIndex)
 			else
 				StripAllWeapons(LR_Player_Guard);
 			
-			if (!gShadow_NoBlock)
+			if (!gH_Cvar_NoBlock.BoolValue)
 			{
 				UnblockEntity(LR_Player_Prisoner, g_Offset_CollisionGroup);
 				UnblockEntity(LR_Player_Guard, g_Offset_CollisionGroup);
@@ -4828,7 +4828,7 @@ public Action Timer_JumpContestOver(Handle timer)
 						if (IsPlayerAlive(winner))
 						{
 							SetEntityHealth(winner, 100);
-							if (!gShadow_NoBlock)
+							if (!gH_Cvar_NoBlock.BoolValue)
 							{
 								BlockEntity(winner, g_Offset_CollisionGroup);
 							}

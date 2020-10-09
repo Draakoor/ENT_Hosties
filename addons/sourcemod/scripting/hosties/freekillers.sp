@@ -26,7 +26,6 @@
 #include <multicolors>
 
 ConVar gH_Cvar_Advanced_FK_Prevention;
-
 int g_iLastKillTime[MAXPLAYERS+1];
 int g_iConsecutiveKills[MAXPLAYERS+1];
 Handle gH_Reset_Kill_Counter[MAXPLAYERS+1];

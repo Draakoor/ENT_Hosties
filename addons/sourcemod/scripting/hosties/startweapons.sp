@@ -93,7 +93,7 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 						{
 							EquipPlayerWeapon(client, wep);
 							
-							if (gShadow_LR_Debug_Enabled == true)
+							if (gH_Cvar_LR_Debug_Enabled.BoolValue)
 							{
 								char NsWeaponName[64];
 								GetEdictClassname(wep, NsWeaponName, sizeof(NsWeaponName));
@@ -126,7 +126,7 @@ public Action StartWeapons_Spawn(Event event, const char[] name, bool dontBroadc
 						{
 							EquipPlayerWeapon(client, wep);
 							
-							if (gShadow_LR_Debug_Enabled == true)
+							if (gH_Cvar_LR_Debug_Enabled.BoolValue)
 							{
 								char NsWeaponName[64];
 								GetEdictClassname(wep, NsWeaponName, sizeof(NsWeaponName));

@@ -88,7 +88,6 @@ TopMenuObject gM_Hosties = INVALID_TOPMENUOBJECT;
 
 char gShadow_Hosties_LogFile[PLATFORM_MAX_PATH];
 ConVar gH_Cvar_LR_Debug_Enabled;
-bool gShadow_LR_Debug_Enabled = false;
 
 #if (MODULE_FREEKILL == 1)
 ConVar gH_Cvar_Freekill_Sound;
@@ -230,7 +229,7 @@ public void OnPluginStart()
 	DirExistsEx(Folder);
 	
 	SetLogFile(gShadow_Hosties_LogFile, "Hosties-Logs", "Entity");
-	if (gShadow_LR_Debug_Enabled == true) LogToFileEx(gShadow_Hosties_LogFile, "Hosties Successfully started.");
+	if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Hosties Successfully started.");
 	AutoExecConfig(true, "sm_hosties3");
 }
 
@@ -350,9 +349,6 @@ public void OnConfigsExecuted()
 	#if (MODULE_MUTE == 1)
 	MutePrisoners_OnConfigsExecuted();
 	#endif
-	#if (MODULE_CHECKPLAYERS == 1)
-	CheckPlayers_OnConfigsExecuted();
-	#endif
 	#if (MODULE_GAMEDESCRIPTION == 1)
 	GameDesc_OnConfigsExecuted();
 	#endif
@@ -364,9 +360,6 @@ public void OnConfigsExecuted()
 	#endif
 	#if (MODULE_LASTREQUEST == 1)
 	LastRequest_OnConfigsExecuted();
-	#endif
-	#if (MODULE_NOBLOCK == 1)
-	NoBlock_OnConfigsExecuted();
 	#endif
 	#if (MODULE_STARTWEAPONS == 1)
 	StartWeapons_OnConfigsExecuted();

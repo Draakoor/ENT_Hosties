@@ -23,35 +23,18 @@
 #include <hosties>
 #include <multicolors>
 
-Handle gH_Cvar_CheckPlayersOn = null;
-bool gShadow_CheckPlayersOn;
+ConVar gH_Cvar_CheckPlayersOn;
 
 void CheckPlayers_OnPluginStart()
 {
 	gH_Cvar_CheckPlayersOn = CreateConVar("sm_hosties_checkplayers_enable", "1", "Enable or disable the !checkplayers command: 0 - disable, 1 - enable", FCVAR_NONE, true, 0.0, true, 1.0);
-	gShadow_CheckPlayersOn = true;
 	
 	RegConsoleCmd("sm_checkplayers", Command_CheckPlayers);
-	
-	HookConVarChange(gH_Cvar_CheckPlayersOn, CheckPlayers_CvarChanged);
-}
-
-void CheckPlayers_OnConfigsExecuted()
-{
-	gShadow_CheckPlayersOn = GetConVarBool(gH_Cvar_CheckPlayersOn);
-}
-
-public void CheckPlayers_CvarChanged(Handle cvar, const char[] oldValue, const char[] newValue)
-{
-	if (cvar == gH_Cvar_CheckPlayersOn)
-	{
-		gShadow_CheckPlayersOn = view_as<bool>(StringToInt(newValue));
-	}
 }
 
 public Action Command_CheckPlayers(int client, int args)
 {
-	if (gShadow_CheckPlayersOn)
+	if (gH_Cvar_CheckPlayersOn.BoolValue)
 	{
 		if (IsPlayerAlive(client))
 		{

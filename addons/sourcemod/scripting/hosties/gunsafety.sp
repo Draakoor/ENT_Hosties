@@ -24,13 +24,9 @@
 #include <hosties>
 #include <multicolors>
 
-Handle gH_Cvar_Strip_On_Slay = null;
-Handle gH_Cvar_Strip_On_Kick = null;
-Handle gH_Cvar_Strip_On_Ban = null;
-
-bool gShadow_Strip_On_Slay = false;
-bool gShadow_Strip_On_Kick = false;
-bool gShadow_Strip_On_Ban = false;
+ConVar gH_Cvar_Strip_On_Slay;
+ConVar gH_Cvar_Strip_On_Kick;
+ConVar gH_Cvar_Strip_On_Ban;
 
 // for ban.sp menu mimic
 int g_BanTarget[MAXPLAYERS+1];
@@ -44,15 +40,8 @@ void GunSafety_OnPluginStart()
 	LoadTranslations("playercommands.phrases");
 
 	gH_Cvar_Strip_On_Slay = CreateConVar("sm_hosties_strip_onslay", "1", "Enable or disable the stripping of weapons from anyone who is slain.", 0, true, 0.0, true, 1.0);
-	gShadow_Strip_On_Slay = true;
 	gH_Cvar_Strip_On_Kick = CreateConVar("sm_hosties_strip_onkick", "1", "Enable or disable the stripping of weapons from anyone who is kicked.", 0, true, 0.0, true, 1.0);
-	gShadow_Strip_On_Kick = true;
 	gH_Cvar_Strip_On_Ban = CreateConVar("sm_hosties_strip_onban", "1", "Enable or disable the stripping of weapons from anyone who is banned.", 0, true, 0.0, true, 1.0);
-	gShadow_Strip_On_Ban = true;
-	
-	HookConVarChange(gH_Cvar_Strip_On_Slay, GunSafety_CvarChanged);
-	HookConVarChange(gH_Cvar_Strip_On_Kick, GunSafety_CvarChanged);
-	HookConVarChange(gH_Cvar_Strip_On_Ban, GunSafety_CvarChanged);
 	
 	AddCommandListener(Strip_Player_Weapons_Intercept, "sm_slay");
 	AddCommandListener(Strip_Player_Weapons_Intercept, "sm_kick");
@@ -70,7 +59,7 @@ public Action Strip_Player_Weapons_Intercept(int client, const char[] command, i
 	// check for proper admin permissions and cvars
 	if (StrEqual(command, "sm_slay", false))
 	{
-		if (!gShadow_Strip_On_Slay)
+		if (!gH_Cvar_Strip_On_Slay.BoolValue)
 		{
 			return Plugin_Continue;
 		}
@@ -88,7 +77,7 @@ public Action Strip_Player_Weapons_Intercept(int client, const char[] command, i
 	}
 	else if (StrEqual(command, "sm_kick", false))
 	{
-		if (!gShadow_Strip_On_Kick)
+		if (!gH_Cvar_Strip_On_Kick.BoolValue)
 		{
 			return Plugin_Continue;
 		}
@@ -106,7 +95,7 @@ public Action Strip_Player_Weapons_Intercept(int client, const char[] command, i
 	}
 	else if (StrEqual(command, "sm_ban", false))
 	{
-		if (!gShadow_Strip_On_Ban)
+		if (!gH_Cvar_Strip_On_Ban.BoolValue)
 		{
 			return Plugin_Continue;
 		}
@@ -151,22 +140,6 @@ public Action Strip_Player_Weapons_Intercept(int client, const char[] command, i
 	}
 	
 	return Plugin_Continue;
-}
-
-public void GunSafety_CvarChanged(Handle cvar, const char[] oldValue, const char[] newValue)
-{
-	if (cvar == gH_Cvar_Strip_On_Slay)
-	{
-		gShadow_Strip_On_Slay = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_Strip_On_Kick)
-	{
-		gShadow_Strip_On_Kick = view_as<bool>(StringToInt(newValue));
-	}
-	else if (cvar == gH_Cvar_Strip_On_Ban)
-	{
-		gShadow_Strip_On_Ban = view_as<bool>(StringToInt(newValue));
-	}
 }
 
 void GunSafety_Menus(Handle h_TopMenu, TopMenuObject obj_Hosties)
