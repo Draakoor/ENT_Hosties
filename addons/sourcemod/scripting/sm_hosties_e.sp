@@ -25,6 +25,7 @@
 #include <sdkhooks>
 #include <emitsoundany>
 #include <hosties>
+#include <autoexecconfig>
 #include <multicolors>
 
 #undef REQUIRE_PLUGIN
@@ -162,33 +163,20 @@ public void OnPluginStart()
 
 	// Events hooks
 	HookEvent("round_start", Event_RoundStart);
+	
+	DirExistsEx("cfg/Hosties");
 
 	// Create ConVars
-	gH_Cvar_Add_ServerTag = CreateConVar("sm_hosties_add_servertag", "1", "Enable or disable automatic adding of SM_Hosties in sv_tags (visible from the server browser in CS:S): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
-	gH_Cvar_Display_Advert = CreateConVar("sm_hosties_display_advert", "1", "Enable or disable the display of the Powered by SM Hosties message at the start of each round.", 0, true, 0.0, true, 1.0);
-	gH_Cvar_ChatTag = CreateConVar("sm_hosties_chat_banner", "{darkblue}[{lightblue}Hosties{darkblue}]", "Edit ChatTag for ENT_Hosties (Colors can be used).");
+	AutoExecConfig_SetFile("Hosties_Settings", "Hosties");
+	AutoExecConfig_SetCreateFile(true);
 	
-	HookConVarChange(gH_Cvar_ChatTag, OnCvarChange_ChatTag);
-	
-	char Temp[256];
-	GetConVarString(gH_Cvar_ChatTag, Temp, sizeof(Temp));
-	Format(ChatBanner, sizeof(ChatBanner), "%s {lime}", Temp);
-	
-	if (StrEqual(ChatBanner, "{red}"))
-		ReplaceString(ChatBanner, sizeof(ChatBanner), "{red}", "\x02");	
-		
-	if (StrEqual(ChatBanner, "{blue}"))
-		ReplaceString(ChatBanner, sizeof(ChatBanner), "{blue}", "\x0C");	
-	
-	CreateConVar("sm_hosties_version", PLUGIN_VERSION, "SM_Hosties plugin version (unchangeable)", 0|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	
-	RegAdminCmd("sm_hostiesadmin", Command_HostiesAdmin, ADMFLAG_SLAY);
+	gH_Cvar_Add_ServerTag = AutoExecConfig_CreateConVar("sm_hosties_add_servertag", "1", "Enable or disable automatic adding of SM_Hosties in sv_tags (visible from the server browser in CS:S): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
+	gH_Cvar_Display_Advert = AutoExecConfig_CreateConVar("sm_hosties_display_advert", "1", "Enable or disable the display of the Powered by SM Hosties message at the start of each round.", 0, true, 0.0, true, 1.0);
+	gH_Cvar_ChatTag = AutoExecConfig_CreateConVar("sm_hosties_chat_banner", "{darkblue}[{lightblue}Hosties{darkblue}]", "Edit ChatTag for ENT_Hosties (Colors can be used).");
+	gH_Cvar_LR_Debug_Enabled = AutoExecConfig_CreateConVar("sm_hosties_debug_enabled", "0", "Allow prisoners to set race points in the air.", 0, true, 0.0, true, 1.0);
 	
 	#if (MODULE_STARTWEAPONS == 1)
 	StartWeapons_OnPluginStart();
-	#endif
-	#if (MODULE_ANTIHEAL == 1)
-	Antiheal_OnPluginStart();
 	#endif
 	#if (MODULE_NOBLOCK == 1)
 	NoBlock_OnPluginStart();
@@ -205,9 +193,6 @@ public void OnPluginStart()
 	#if (MODULE_TEAMOVERLAYS == 1)
 	TeamOverlays_OnPluginStart();
 	#endif
-	#if (MODULE_LASTREQUEST == 1)
-	LastRequest_OnPluginStart();
-	#endif
 	#if (MODULE_MUTE == 1)
 	MutePrisoners_OnPluginStart();
 	#endif
@@ -223,6 +208,35 @@ public void OnPluginStart()
 	#if (MODULE_FIXJB == 1)
 	FixJB_OnPluginStart();
 	#endif
+	AutoExecConfig_ExecuteFile();
+	AutoExecConfig_CleanFile();
+	
+	AutoExecConfig_SetFile("LastRequest_Settings", "Hosties");
+	AutoExecConfig_SetCreateFile(true);
+	#if (MODULE_ANTIHEAL == 1)
+	Antiheal_OnPluginStart();
+	#endif
+	#if (MODULE_LASTREQUEST == 1)
+	LastRequest_OnPluginStart();
+	#endif
+	AutoExecConfig_ExecuteFile();
+	AutoExecConfig_CleanFile();
+	
+	HookConVarChange(gH_Cvar_ChatTag, OnCvarChange_ChatTag);
+	
+	char Temp[256];
+	GetConVarString(gH_Cvar_ChatTag, Temp, sizeof(Temp));
+	Format(ChatBanner, sizeof(ChatBanner), "%s {lime}", Temp);
+	
+	if (StrEqual(ChatBanner, "{red}"))
+		ReplaceString(ChatBanner, sizeof(ChatBanner), "{red}", "\x02");	
+		
+	if (StrEqual(ChatBanner, "{blue}"))
+		ReplaceString(ChatBanner, sizeof(ChatBanner), "{blue}", "\x0C");	
+	
+	AutoExecConfig_CreateConVar("sm_hosties_version", PLUGIN_VERSION, "SM_Hosties plugin version (unchangeable)", 0|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	
+	RegAdminCmd("sm_hostiesadmin", Command_HostiesAdmin, ADMFLAG_SLAY);
 	
 	char Folder[256];
 	BuildPath(Path_SM, Folder, sizeof(Folder), "logs/Entity");
@@ -230,7 +244,7 @@ public void OnPluginStart()
 	
 	SetLogFile(gShadow_Hosties_LogFile, "Hosties-Logs", "Entity");
 	if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "Hosties Successfully started.");
-	AutoExecConfig(true, "sm_hosties3");
+
 }
 
 public void OnMapStart()

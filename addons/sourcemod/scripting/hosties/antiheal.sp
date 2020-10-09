@@ -39,8 +39,8 @@ void Antiheal_OnPluginStart()
 		SetFailState("Unable to find offset for health.");
 	}
 
-	gH_Cvar_AntiHeal_Enabled = CreateConVar("sm_hosties_antiheal_enabled", "1", "Enable or disable heal anticheat in lr:", 0, true, 0.0, true, 1.0);
-	gH_Cvar_AntiHeal_Punishment = CreateConVar("sm_hosties_antiheal_mode", "0", "Punishment mode (0 - Block heal, 1 - Slay and abort)", 0, true, 0.0, true, 1.0);
+	gH_Cvar_AntiHeal_Enabled = AutoExecConfig_CreateConVar("sm_hosties_antiheal_enabled", "1", "Enable or disable heal anticheat in lr:", 0, true, 0.0, true, 1.0);
+	gH_Cvar_AntiHeal_Punishment = AutoExecConfig_CreateConVar("sm_hosties_antiheal_mode", "0", "Punishment mode (0 - Block heal, 1 - Slay and abort)", 0, true, 0.0, true, 1.0);
 }
 
 public void OnStartLR(int PrisonerIndex, int GuardIndex)

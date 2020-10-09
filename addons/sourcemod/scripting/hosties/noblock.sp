@@ -28,7 +28,7 @@ ConVar gH_Cvar_NoBlock;
 
 void NoBlock_OnPluginStart()
 {
-	gH_Cvar_NoBlock = CreateConVar("sm_hosties_noblock_enable", "1", "Enable or disable integrated removing of player vs player collisions (noblock): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
+	gH_Cvar_NoBlock = AutoExecConfig_CreateConVar("sm_hosties_noblock_enable", "1", "Enable or disable integrated removing of player vs player collisions (noblock): 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
 	
 	g_Offset_CollisionGroup = FindSendPropInfo("CBaseEntity", "m_CollisionGroup");
 	if (g_Offset_CollisionGroup == -1)
