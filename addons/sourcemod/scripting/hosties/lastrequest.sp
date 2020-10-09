@@ -50,6 +50,7 @@ float Before_Jump_pos[MAXPLAYERS+1][3];
 bool LR_Player_Jumped[MAXPLAYERS+1] = false;
 bool LR_Player_Landed[MAXPLAYERS+1] = false;
 bool BlockLR = false;
+bool LR_Player_OnCD[MAXPLAYERS+1] = false;
 float f_DoneDistance[MAXPLAYERS+1];
 
 bool g_bIsLRAvailable = true;
@@ -178,6 +179,7 @@ ConVar gH_Cvar_LR_VictorPoints;
 ConVar gH_Cvar_LR_RestoreWeapon_T;
 ConVar gH_Cvar_LR_RestoreWeapon_CT;
 ConVar gH_Cvar_LR_Rebel_HP_per_CT;
+ConVar gH_Cvar_LR_Race_CDOnCancel;
 
 int g_iLastCT_FreeAttacker = -1;
 bool g_bPushedToMenu = false;
@@ -416,6 +418,7 @@ void LastRequest_OnPluginStart()
 	gH_Cvar_LR_KnifeFight_Rebel = AutoExecConfig_CreateConVar("sm_hosties_lr_kf_cheat_action", "1", "What to do with a knife fighter who attacks the other player with another weapon than knife: 0 - abort LR, 1 - slay player", 0, true, 0.0, true, 1.0);
 	gH_Cvar_LR_Race_AirPoints = AutoExecConfig_CreateConVar("sm_hosties_lr_race_airpoints", "0", "Allow prisoners to set race points in the air.", 0, true, 0.0, true, 1.0);
 	gH_Cvar_LR_Race_NotifyCTs = AutoExecConfig_CreateConVar("sm_hosties_lr_race_tell_cts", "1", "Tells all CTs when a T has selected the race option from the LR menu", 0, true, 0.0, true, 1.0);
+	gH_Cvar_LR_Race_CDOnCancel = AutoExecConfig_CreateConVar("sm_hosties_lr_race_cd_on_cancel", "1", "Set a cooldown for LR after Race cancel (against exploits)", 0, true, 0.0, true, 1.0);
 	gH_Cvar_LR_Rebel_MaxTs = AutoExecConfig_CreateConVar("sm_hosties_lr_rebel_ts", "1", "If the Rebel LR option is enabled, specifies the maximum number of alive terrorists needed for the option to appear in the LR menu.", 0, true, 1.0);
 	gH_Cvar_LR_Rebel_MinCTs = AutoExecConfig_CreateConVar("sm_hosties_lr_rebel_cts", "1", "If the Rebel LR option is enabled, specifies how minimum number of alive counter-terrorists needed for the option to appear in the LR menu.", 0, true, 1.0);
 	gH_Cvar_LR_M4M_MagCapacity = AutoExecConfig_CreateConVar("sm_hosties_lr_m4m_capacity", "7", "The number of bullets in each magazine given to Mag4Mag LR contestants", 0, true, 2.0);
@@ -2610,89 +2613,96 @@ public Action Command_LastRequest(int client, int args)
 	{
 		if (!BlockLR)
 		{
-			if (g_bIsLRAvailable)
+			if (!LR_Player_OnCD[client] || !gH_Cvar_LR_Race_CDOnCancel.BoolValue)
 			{
-				if (!g_bInLastRequest[client])
+				if (g_bIsLRAvailable)
 				{
-					if (IsPlayerAlive(client) && (GetClientTeam(client) == CS_TEAM_T))
+					if (!g_bInLastRequest[client])
 					{
-						if (g_bIsARebel[client] && !gH_Cvar_RebelHandling.IntValue)
+						if (IsPlayerAlive(client) && (GetClientTeam(client) == CS_TEAM_T))
 						{
-							CPrintToChat(client, "%s %t", ChatBanner, "LR Rebel Not Allowed");
-						}
-						else
-						{
-							if ((g_Game == Game_CSGO && GameRules_GetProp("m_bWarmupPeriod") == 0) || g_Game == Game_CSS)
+							if (g_bIsARebel[client] && !gH_Cvar_RebelHandling.IntValue)
 							{
-								// check the number of terrorists still alive
-								int Ts, CTs, NumCTsAvailable;
-								UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);
-
-								if (Ts <= gH_Cvar_MaxPrisonersToLR.IntValue || gH_Cvar_MaxPrisonersToLR.IntValue == 0)
+								CPrintToChat(client, "%s %t", ChatBanner, "LR Rebel Not Allowed");
+							}
+							else
+							{
+								if ((g_Game == Game_CSGO && GameRules_GetProp("m_bWarmupPeriod") == 0) || g_Game == Game_CSS)
 								{
-									if (CTs > 0)
+									// check the number of terrorists still alive
+									int Ts, CTs, NumCTsAvailable;
+									UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);
+
+									if (Ts <= gH_Cvar_MaxPrisonersToLR.IntValue || gH_Cvar_MaxPrisonersToLR.IntValue == 0)
 									{
-										if (NumCTsAvailable > 0)
+										if (CTs > 0)
 										{
-											if (g_Game == Game_CSGO)
+											if (NumCTsAvailable > 0)
 											{
-												ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
-												ConVar g_cvFreezeTime = FindConVar("mp_freezetime");
+												if (g_Game == Game_CSGO)
+												{
+													ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
+													ConVar g_cvFreezeTime = FindConVar("mp_freezetime");
+													
+													int RoundTime = GameRules_GetProp("m_iRoundTime");
+													int GraceTime = GetConVarInt(g_cvGraceTime);
+													int FreezeTime = GetConVarInt(g_cvFreezeTime);
+													
+													int ToCheckTime = (RoundTime - GraceTime - FreezeTime);
 												
-												int RoundTime = GameRules_GetProp("m_iRoundTime");
-												int GraceTime = GetConVarInt(g_cvGraceTime);
-												int FreezeTime = GetConVarInt(g_cvFreezeTime);
-												
-												int ToCheckTime = (RoundTime - GraceTime - FreezeTime);
-											
-												if (g_RoundTime < ToCheckTime)
+													if (g_RoundTime < ToCheckTime)
+													{
+														DisplayLastRequestMenu(client, Ts, CTs);
+													}
+													else
+													{
+														CPrintToChat(client, "%s %t", ChatBanner, "LR Grace TimeBlock");
+													}
+												}
+												else if (g_Game == Game_CSS)
 												{
 													DisplayLastRequestMenu(client, Ts, CTs);
 												}
-												else
-												{
-													CPrintToChat(client, "%s %t", ChatBanner, "LR Grace TimeBlock");
-												}
 											}
-											else if (g_Game == Game_CSS)
+											else
 											{
-												DisplayLastRequestMenu(client, Ts, CTs);
+												CPrintToChat(client, "%s %t", ChatBanner, "LR No CTs Available");
 											}
 										}
 										else
 										{
-											CPrintToChat(client, "%s %t", ChatBanner, "LR No CTs Available");
+											CPrintToChat(client, "%s %t", ChatBanner, "No CTs Alive");
 										}
 									}
 									else
 									{
-										CPrintToChat(client, "%s %t", ChatBanner, "No CTs Alive");
+										CPrintToChat(client, "%s %t", ChatBanner, "Too Many Ts");
 									}
 								}
 								else
 								{
-									CPrintToChat(client, "%s %t", ChatBanner, "Too Many Ts");
+									CPrintToChat(client, "%s %t", ChatBanner, "Blocked Warmup");
 								}
 							}
-							else
-							{
-								CPrintToChat(client, "%s %t", ChatBanner, "Blocked Warmup");
-							}
+						}
+						else
+						{
+							CPrintToChat(client, "%s %t", ChatBanner, "Not Alive Or In Wrong Team");
 						}
 					}
 					else
 					{
-						CPrintToChat(client, "%s %t", ChatBanner, "Not Alive Or In Wrong Team");
+						CPrintToChat(client, "%s %t", ChatBanner, "Another LR In Progress");
 					}
 				}
 				else
 				{
-					CPrintToChat(client, "%s %t", ChatBanner, "Another LR In Progress");
+					CPrintToChat(client, "%s %t", ChatBanner, "LR Not Available");
 				}
 			}
 			else
 			{
-				CPrintToChat(client, "%s %t", ChatBanner, "LR Not Available");
+				CPrintToChat(client, "%s %t", ChatBanner, "Race CoolDown");
 			}
 		}
 		else
@@ -3231,10 +3241,35 @@ public int RaceStartPointHandler(Handle menu, MenuAction action, int client, int
 			{
 				CloseHandle(gH_BuildLR[client]);
 				gH_BuildLR[client] = INVALID_HANDLE;
+				
+				if (gH_Cvar_LR_Race_NotifyCTs.BoolValue)
+				{
+					for (int idx = 1; idx <= MaxClients; idx++)
+					{
+						if (IsClientInGame(idx) && IsPlayerAlive(idx) && (GetClientTeam(idx) == CS_TEAM_CT))
+						{
+							CPrintToChat(idx, "%s %t", ChatBanner, "Race Aborted", client);
+						}
+					}
+				}
+				
+				if (gH_Cvar_LR_Race_CDOnCancel.BoolValue)
+				{
+					CPrintToChat(client, "%s %t", ChatBanner, "Race CoolDown");
+					LR_Player_OnCD[client] = true;
+					CreateTimer(10.0, Timer_RaceCD, client, TIMER_FLAG_NO_MAPCHANGE);
+				}
 			}
 		}
 		CloseHandle(menu);
 	}
+}
+
+public Action Timer_RaceCD(Handle timer, int client)
+{
+	CPrintToChat(client, "%s %t", ChatBanner, "Race CoolDown Done");
+	LR_Player_OnCD[client] = false;
+	return Plugin_Stop;
 }
 
 void CreateRaceEndPointMenu(int client)
@@ -5163,6 +5198,9 @@ public Action Timer_Countdown(Handle timer)
 							NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_awp");
 						}
 					}
+
+					SetArrayCell(gH_DArray_LR_Partners, LR_Player_Prisoner, NSW_Prisoner, view_as<int>(Block_PrisonerData));
+					SetArrayCell(gH_DArray_LR_Partners, LR_Player_Guard, NSW_Guard, view_as<int>(Block_GuardData));
 
 					SetEntPropEnt(LR_Player_Prisoner, Prop_Send, "m_hActiveWeapon", NSW_Prisoner);
 					SetEntPropEnt(LR_Player_Guard, Prop_Send, "m_hActiveWeapon", NSW_Guard);

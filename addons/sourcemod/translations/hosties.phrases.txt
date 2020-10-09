@@ -659,6 +659,19 @@
 		"#format"	"{1:N}"
 		"en"		"{1} picked the Race LR. Watch for starting & ending points!"
 	}
+	"Race Aborted"
+	{
+		"#format"	"{1:N}"
+		"en"		"{1} aborted the Race. New LR can be started after 10 seconds!"
+	}
+	"Race CoolDown"
+	{
+		"en"		"You aborted the Race! You can start a new LR after a 10-seconds cooldown."
+	}
+	"Race CoolDown Done"
+	{
+		"en"		"You can start a new LR from now."
+	}
 	"Respawned Target"
 	{
 		"#format"	"{1:s}"
