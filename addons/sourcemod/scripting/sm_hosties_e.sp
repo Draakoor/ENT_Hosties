@@ -31,6 +31,7 @@
 #undef REQUIRE_EXTENSIONS
 #tryinclude <SteamWorks>
 #tryinclude <sourcebanspp>
+#tryinclude <myjailbreak>
 #define REQUIRE_EXTENSIONS
 #define REQUIRE_PLUGIN
 
@@ -69,6 +70,8 @@
 #define	MODULE_GUNSAFETY					1
 // Add intelli-respawn
 #define	MODULE_RESPAWN						1
+// Fix MyJailbreak value sets
+#define	MODULE_FIXJB						1
 
 /******************************************************************************
                    !EDIT BELOW THIS COMMENT AT YOUR OWN PERIL!
@@ -77,6 +80,7 @@
 // Global vars
 char ChatBanner[256];
 bool g_bSBAvailable = false; // SourceBans
+bool g_bMYJB = false;
 GameType g_Game = Game_Unknown;
 
 Handle gH_TopMenu = INVALID_HANDLE;
@@ -87,18 +91,14 @@ ConVar gH_Cvar_LR_Debug_Enabled;
 bool gShadow_LR_Debug_Enabled = false;
 
 #if (MODULE_FREEKILL == 1)
-Handle gH_Cvar_Freekill_Sound = INVALID_HANDLE;
-Handle gH_Cvar_Freekill_Threshold = INVALID_HANDLE;
-Handle gH_Cvar_Freekill_Notify = INVALID_HANDLE;
-Handle gH_Cvar_Freekill_BanLength = INVALID_HANDLE;
-Handle gH_Cvar_Freekill_Punishment = INVALID_HANDLE;
-Handle gH_Cvar_Freekill_Reset = INVALID_HANDLE;
+ConVar gH_Cvar_Freekill_Sound;
+ConVar gH_Cvar_Freekill_Threshold;
+ConVar gH_Cvar_Freekill_Notify;
+ConVar gH_Cvar_Freekill_BanLength;
+ConVar gH_Cvar_Freekill_Punishment;
+ConVar gH_Cvar_Freekill_Reset;
 char gShadow_Freekill_Sound[PLATFORM_MAX_PATH];
-int gShadow_Freekill_Threshold;
-int gShadow_Freekill_BanLength;
-int gShadow_Freekill_Reset;
 FreekillPunishment gShadow_Freekill_Punishment;
-bool gShadow_Freekill_Notify;
 int gA_FreekillsOfCT[MAXPLAYERS+1];
 #endif
 
@@ -137,6 +137,9 @@ int gA_FreekillsOfCT[MAXPLAYERS+1];
 #endif
 #if (MODULE_RESPAWN == 1)
 #include "hosties/respawn.sp"
+#endif
+#if (MODULE_FIXJB == 1)
+#include "hosties/myjailbreak_fixvalue.sp"
 #endif
 
 // ConVars
@@ -218,6 +221,9 @@ public void OnPluginStart()
 	#if (MODULE_RESPAWN == 1)
 	Respawn_OnPluginStart();
 	#endif
+	#if (MODULE_FIXJB == 1)
+	FixJB_OnPluginStart();
+	#endif
 	
 	char Folder[256];
 	BuildPath(Path_SM, Folder, sizeof(Folder), "logs/Entity");
@@ -256,6 +262,11 @@ public void OnAllPluginsLoaded()
 	if (LibraryExists("adminmenu") && (h_TopMenu != INVALID_HANDLE))
 	{
 		OnAdminMenuReady(h_TopMenu);
+	}
+	
+	if (LibraryExists("myjailbreak"))
+	{
+		g_bMYJB = true;
 	}
 	
 	#if (MODULE_MUTE == 1)
@@ -359,6 +370,9 @@ public void OnConfigsExecuted()
 	#endif
 	#if (MODULE_STARTWEAPONS == 1)
 	StartWeapons_OnConfigsExecuted();
+	#endif
+	#if (MODULE_FIXJB == 1)
+	FixJB_OnConfigsExecuted();
 	#endif
 }
 

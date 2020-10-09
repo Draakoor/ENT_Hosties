@@ -40,8 +40,6 @@
 // Global variables
 int g_LastButtons[MAXPLAYERS+1];
 bool g_TriedToStab[MAXPLAYERS+1] = false;
-int Picked_NSW[MAXPLAYERS+1];
-char Picked_Pistol[32][MAXPLAYERS+1];
 
 ConVar g_hRoundTime;
 int g_RoundTime;
@@ -178,6 +176,7 @@ ConVar gH_Cvar_LR_BlockSuicide;
 ConVar gH_Cvar_LR_VictorPoints;
 ConVar gH_Cvar_LR_RestoreWeapon_T;
 ConVar gH_Cvar_LR_RestoreWeapon_CT;
+ConVar gH_Cvar_LR_Rebel_HP_per_CT;
 
 int g_iLastCT_FreeAttacker = -1;
 bool g_bPushedToMenu = false;
@@ -307,6 +306,11 @@ void LastRequest_OnPluginStart()
 	{
 		SetFailState("Unable to find offset for next secondary attack.");
 	}
+	g_Offset_CollisionGroup = FindSendPropInfo("CBaseEntity", "m_CollisionGroup");
+	if (g_Offset_CollisionGroup == -1)
+	{
+		SetFailState("Unable to find offset for collision groups.");
+	}
 	
 	// Console commands
 	RegConsoleCmd("sm_lr", Command_LastRequest);
@@ -431,6 +435,7 @@ void LastRequest_OnPluginStart()
 	gH_Cvar_LR_VictorPoints = CreateConVar("sm_hosties_lr_victorpoints", "1", "Amount of frags to reward victor in an LR where other player automatically dies", 0, true, 0.0);
 	gH_Cvar_LR_RestoreWeapon_T = CreateConVar("sm_hosties_lr_restoreweapon_t", "1", "Restore weapons after LR for T players: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
 	gH_Cvar_LR_RestoreWeapon_CT = CreateConVar("sm_hosties_lr_restoreweapon_ct", "1", "Restore weapons after LR for CT players: 0 - disable, 1 - enable", 0, true, 0.0, true, 1.0);
+	gH_Cvar_LR_Rebel_HP_per_CT = CreateConVar("sm_hosties_rebel_hp_for_ct", "50", "Customize HPs per CT in Rebel as a Terrorist.", 0, true, 0.0);
 	
 	HookConVarChange(gH_Cvar_LR_KnifeFight_On, ConVarChanged_LastRequest);
 	HookConVarChange(gH_Cvar_LR_Shot4Shot_On, ConVarChanged_LastRequest);
@@ -1837,7 +1842,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					int Pistol_Prisoner = EntRefToEntIndex(GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_PrisonerData)));
 					int Pistol_Guard = EntRefToEntIndex(GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_GuardData)));
 					
-					if ((weapon != -1) && (weapon != Pistol_Prisoner) && (weapon != Pistol_Guard))
+					if ((weapon != Pistol_Prisoner) && (weapon != Pistol_Guard))
 					{
 						DecideRebelsFate(attacker, idx, victim);
 						if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
@@ -1900,35 +1905,25 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 						return Plugin_Changed;
 					}
 				}
-				else if ((Type == LR_Shot4Shot || Type == LR_Mag4Mag) && \
+				else if ((Type == LR_Shot4Shot || Type == LR_Mag4Mag || Type == LR_NoScope) && \
 					((attacker == LR_Player_Guard && victim == LR_Player_Prisoner) || \
 					(attacker == LR_Player_Prisoner && victim == LR_Player_Guard)))
 				{
-					if (weapon > 0 && !weapon)
+					int Prisoner_Weapon = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_PrisonerData));
+					int Guard_Weapon = GetArrayCell(gH_DArray_LR_Partners, idx, view_as<int>(Block_GuardData));
+					
+					if (!Weapon_IsValid(weapon))
 					{
-						GetEntityClassname(weapon, UsedWeapon, sizeof(UsedWeapon));
-						ReplaceString(UsedWeapon, sizeof(UsedWeapon), "weapon_", "", false);
+						weapon = Client_GetActiveWeapon(attacker);
 					}
 					
-					if (!StrEqual(Picked_Pistol[attacker], "") && !StrEqual(UsedWeapon, ""))
+					if ((weapon != Prisoner_Weapon) && (weapon != Guard_Weapon) && ((StrContains(UsedWeapon, "knife", false) == -1) && (StrContains(UsedWeapon, "bayonet", false) == -1)))
 					{
-						if ((StrEqual(Picked_Pistol[attacker], "hkp2000") || (StrEqual(Picked_Pistol[attacker], "usp_silencer"))) && \
-							(StrEqual(UsedWeapon, "usp_silencer") || StrEqual(UsedWeapon, "hkp2000")))
-						{
-							return Plugin_Continue;
-						}
-						else if ((StrEqual(Picked_Pistol[attacker], "revolver")) && (StrEqual(UsedWeapon, "deagle") || StrEqual(UsedWeapon, "revolver")))
-						{
-							return Plugin_Continue;
-						}
-						else if (!StrEqual(Picked_Pistol[attacker], UsedWeapon))
-						{
-							damage = 0.0;
-							if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
-							DecideRebelsFate(attacker, idx);
-							if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in Shot4Shot - Choosen weapon is %s", attacker, UsedWeapon, Picked_Pistol[attacker]);
-							return Plugin_Changed;
-						}
+						damage = 0.0;
+						if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
+						DecideRebelsFate(attacker, idx);
+						if (gH_Cvar_LR_Debug_Enabled.BoolValue) LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using %s in Shot4Shot", attacker, UsedWeapon);
+						return Plugin_Changed;
 					}
 				}
 				else if (((attacker == LR_Player_Guard && victim != LR_Player_Prisoner) || \
@@ -1937,27 +1932,6 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				{
 					damage = 0.0;
 					return Plugin_Changed;
-				}
-				else if (Type == LR_NoScope && \
-					((attacker == LR_Player_Guard && victim == LR_Player_Prisoner) || \
-					(attacker == LR_Player_Prisoner && victim == LR_Player_Guard)))
-				{
-					char buffer[64], NsWeaponName[64];
-					Client_GetActiveWeaponName(attacker, buffer, sizeof(buffer));
-					GetEntityClassname(Picked_NSW[attacker], NsWeaponName, sizeof(NsWeaponName));
-					
-					if (g_Game == Game_CSGO) RightKnifeAntiCheat(attacker, idx);
-					
-					if (!StrEqual(buffer, NsWeaponName))
-					{
-						damage = 0.0;
-						DecideRebelsFate(attacker, idx);
-						
-						if (gH_Cvar_LR_Debug_Enabled.BoolValue)
-							LogToFileEx(gShadow_Hosties_LogFile, "%L has been killed for using '%s' in NoScope (picked is '%s') - 2170", attacker, buffer, NsWeaponName);
-						
-						return Plugin_Changed;
-					}
 				}
 				else if (Type == LR_Rebel)
 				{
@@ -3662,8 +3636,6 @@ void InitializeGame(int iPartnersIndex)
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_deagle");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_deagle");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_deagle";
-					Picked_Pistol[LR_Player_Guard] = "weapon_deagle";
 				}
 				case Pistol_P228:
 				{
@@ -3671,37 +3643,27 @@ void InitializeGame(int iPartnersIndex)
 					{
 						Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_p228");
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_p228");
-						Picked_Pistol[LR_Player_Prisoner] = "weapon_p228";
-						Picked_Pistol[LR_Player_Guard] = "weapon_p228";
 					}
 					else if (g_Game == Game_CSGO)
 					{
 						Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_p250");
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_p250");
-						Picked_Pistol[LR_Player_Prisoner] = "weapon_p250";
-						Picked_Pistol[LR_Player_Guard] = "weapon_p250";
 					}
 				}
 				case Pistol_Glock:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_glock");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_glock");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_glock";
-					Picked_Pistol[LR_Player_Guard] = "weapon_glock";
 				}
 				case Pistol_FiveSeven:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_fiveseven");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_fiveseven");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_fiveseven";
-					Picked_Pistol[LR_Player_Guard] = "weapon_fiveseven";
 				}
 				case Pistol_Dualies:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_elite");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_elite");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_elite";
-					Picked_Pistol[LR_Player_Guard] = "weapon_elite";
 				}
 				case Pistol_USP:
 				{
@@ -3709,38 +3671,28 @@ void InitializeGame(int iPartnersIndex)
 					{
 						Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_usp");
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_usp");
-						Picked_Pistol[LR_Player_Prisoner] = "weapon_usp";
-						Picked_Pistol[LR_Player_Guard] = "weapon_usp";
 					}
 					else if(g_Game == Game_CSGO)
 					{
 						Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_usp_silencer");
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_usp_silencer");
-						Picked_Pistol[LR_Player_Prisoner] = "weapon_usp_silencer";
-						Picked_Pistol[LR_Player_Guard] = "weapon_usp_silencer";
 					}
 				}
 				case Pistol_Tec9:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_tec9");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_tec9");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_tec9";
-					Picked_Pistol[LR_Player_Guard] = "weapon_tec9";
 				}
 				case Pistol_Revolver:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_revolver");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_revolver");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_revolver";
-					Picked_Pistol[LR_Player_Guard] = "weapon_revolver";
 				}
 				default:
 				{
 					LogError("hit default S4S");
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_deagle");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_deagle");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_deagle";
-					Picked_Pistol[LR_Player_Guard] = "weapon_deagle";
 				}
 			}
 			
@@ -3757,9 +3709,6 @@ void InitializeGame(int iPartnersIndex)
 				SetZeroAmmo(LR_Player_Guard, Guard_Weapon);
 				SetZeroAmmo(LR_Player_Prisoner, Prisoner_Weapon);
 			}
-			
-			ReplaceString(Picked_Pistol[LR_Player_Guard], sizeof(Picked_Pistol), "weapon_", "", false); 
-			ReplaceString(Picked_Pistol[LR_Player_Prisoner], sizeof(Picked_Pistol), "weapon_", "", false); 
 			
 			CPrintToChatAll("%s %t", ChatBanner, "LR S4S Start", LR_Player_Prisoner, LR_Player_Guard);
 			// randomize who starts first
@@ -4152,8 +4101,8 @@ void InitializeGame(int iPartnersIndex)
 					}
 				}
 				
-				Picked_NSW[LR_Player_Prisoner] = NSW_Prisoner;
-				Picked_NSW[LR_Player_Guard] = NSW_Guard;
+				SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, NSW_Prisoner, view_as<int>(Block_PrisonerData));
+				SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, NSW_Guard, view_as<int>(Block_GuardData));
 				
 				if (gH_Cvar_LR_Debug_Enabled.BoolValue)
 				{
@@ -4268,7 +4217,7 @@ void InitializeGame(int iPartnersIndex)
 			}
 			
 			// set HP
-			SetEntData(LR_Player_Prisoner, g_Offset_Health, numCTsAlive*100+50);
+			SetEntData(LR_Player_Prisoner, g_Offset_Health, numCTsAlive*gH_Cvar_LR_Rebel_HP_per_CT.IntValue);
 			
 			// announce LR
 			CPrintToChatAll("%s %t", ChatBanner, "LR Has Chosen to Rebel!", LR_Player_Prisoner);
@@ -4288,9 +4237,6 @@ void InitializeGame(int iPartnersIndex)
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, 0, view_as<int>(Block_Global2)); // M4MroundsFired
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, 0, view_as<int>(Block_Global3)); // M4Mammo
 			
-			// give knives and deagles
-			GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
-			GivePlayerItem(LR_Player_Guard, "weapon_knife");
 			// grab weapon choice
 			int PistolChoice;
 			ResetPack(gH_BuildLR[LR_Player_Prisoner]);
@@ -4303,11 +4249,6 @@ void InitializeGame(int iPartnersIndex)
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_deagle");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_deagle");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_deagle";
-					Picked_Pistol[LR_Player_Guard] = "weapon_deagle";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_P228:
 				{
@@ -4315,49 +4256,27 @@ void InitializeGame(int iPartnersIndex)
 					{
 						Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_p228");
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_p228");
-						Picked_Pistol[LR_Player_Prisoner] = "weapon_p228";
-						Picked_Pistol[LR_Player_Guard] = "weapon_p228";
 					}
 					else if (g_Game == Game_CSGO)
 					{
 						Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_p250");
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_p250");
-						Picked_Pistol[LR_Player_Prisoner] = "weapon_p250";
-						Picked_Pistol[LR_Player_Guard] = "weapon_p250";
-						
-						Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-						Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 					}
 				}
 				case Pistol_Glock:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_glock");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_glock");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_glock";
-					Picked_Pistol[LR_Player_Guard] = "weapon_glock";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_FiveSeven:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_fiveseven");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_fiveseven");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_fiveseven";
-					Picked_Pistol[LR_Player_Guard] = "weapon_fiveseven";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_Dualies:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_elite");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_elite");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_elite";
-					Picked_Pistol[LR_Player_Guard] = "weapon_elite";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_USP:
 				{
@@ -4365,61 +4284,43 @@ void InitializeGame(int iPartnersIndex)
 					{
 						Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_usp");
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_usp");
-						Picked_Pistol[LR_Player_Prisoner] = "weapon_usp";
-						Picked_Pistol[LR_Player_Guard] = "weapon_usp";
 					}
 					else if (g_Game == Game_CSGO)
 					{
 						Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_usp_silencer");
 						Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_usp_silencer");
-						Picked_Pistol[LR_Player_Prisoner] = "weapon_usp_silencer";
-						Picked_Pistol[LR_Player_Guard] = "weapon_usp_silencer";
-						
-						Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-						Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 					}
 				}
 				case Pistol_Tec9:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_tec9");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_tec9");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_tec9";
-					Picked_Pistol[LR_Player_Guard] = "weapon_tec9";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				case Pistol_Revolver:
 				{
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_revolver");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_revolver");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_revolver";
-					Picked_Pistol[LR_Player_Guard] = "weapon_revolver";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 				default:
 				{
 					LogError("hit default S4S");
 					Pistol_Prisoner = GivePlayerItem(LR_Player_Prisoner, "weapon_deagle");
 					Pistol_Guard = GivePlayerItem(LR_Player_Guard, "weapon_deagle");
-					Picked_Pistol[LR_Player_Prisoner] = "weapon_deagle";
-					Picked_Pistol[LR_Player_Guard] = "weapon_deagle";
-					
-					Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
-					Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
 				}
 			}
+			
+			Prisoner_Weapon = GetEntPropEnt(LR_Player_Prisoner, Prop_Data, "m_hActiveWeapon");
+			Guard_Weapon = GetEntPropEnt(LR_Player_Guard, Prop_Data, "m_hActiveWeapon");
+			
+			// give knives and deagles
+			GivePlayerItem(LR_Player_Prisoner, "weapon_knife");
+			GivePlayerItem(LR_Player_Guard, "weapon_knife");
 
 			if(g_Game == Game_CSGO)
 			{
 				SetZeroAmmo(LR_Player_Guard, Guard_Weapon);
 				SetZeroAmmo(LR_Player_Prisoner, Prisoner_Weapon);
 			}
-			
-			ReplaceString(Picked_Pistol[LR_Player_Guard], sizeof(Picked_Pistol), "weapon_", "", false); 
-			ReplaceString(Picked_Pistol[LR_Player_Prisoner], sizeof(Picked_Pistol), "weapon_", "", false); 
 			
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, Pistol_Prisoner, view_as<int>(Block_PrisonerData));
 			SetArrayCell(gH_DArray_LR_Partners, iPartnersIndex, Pistol_Guard, view_as<int>(Block_GuardData));
@@ -5193,8 +5094,12 @@ public Action Timer_Countdown(Handle timer)
 				{
 					StripAllWeapons(LR_Player_Prisoner);
 					StripAllWeapons(LR_Player_Guard);
-					RemoveDangerZone(LR_Player_Prisoner);
-					RemoveDangerZone(LR_Player_Guard);
+					
+					if (g_Game == Game_CSGO)
+					{
+						RemoveDangerZone(LR_Player_Prisoner);
+						RemoveDangerZone(LR_Player_Guard);
+					}
 					
 					// grab weapon choice
 					NoScopeWeapon NS_Selection;
@@ -5245,9 +5150,6 @@ public Action Timer_Countdown(Handle timer)
 							NSW_Guard = GivePlayerItem(LR_Player_Guard, "weapon_awp");
 						}
 					}
-
-					Picked_NSW[LR_Player_Prisoner] = NSW_Prisoner;
-					Picked_NSW[LR_Player_Guard] = NSW_Guard;
 
 					SetEntPropEnt(LR_Player_Prisoner, Prop_Send, "m_hActiveWeapon", NSW_Prisoner);
 					SetEntPropEnt(LR_Player_Guard, Prop_Send, "m_hActiveWeapon", NSW_Guard);
@@ -6050,10 +5952,10 @@ public Action Timer_BeerGoggles(Handle timer)
 void KillAndReward(int loser, int victor)
 {
 	StripAllWeapons(loser);
-	RemoveDangerZone(loser);
 	
 	if (g_Game == Game_CSGO)
 	{
+		RemoveDangerZone(loser);
 		CreateTimer(0.1, Timer_SafeSlay, GetClientUserId(loser), TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
