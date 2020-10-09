@@ -33,6 +33,7 @@
 #tryinclude <SteamWorks>
 #tryinclude <sourcebanspp>
 #tryinclude <myjailbreak>
+#tryinclude <wardenmenu>
 #define REQUIRE_EXTENSIONS
 #define REQUIRE_PLUGIN
 
@@ -81,7 +82,7 @@
 // Global vars
 char ChatBanner[256];
 bool g_bSBAvailable = false; // SourceBans
-bool g_bMYJB = false;
+bool g_bMYJB = false, g_bBW = false;
 GameType g_Game = Game_Unknown;
 
 Handle gH_TopMenu = INVALID_HANDLE;
@@ -205,9 +206,6 @@ public void OnPluginStart()
 	#if (MODULE_RESPAWN == 1)
 	Respawn_OnPluginStart();
 	#endif
-	#if (MODULE_FIXJB == 1)
-	FixJB_OnPluginStart();
-	#endif
 	AutoExecConfig_ExecuteFile();
 	AutoExecConfig_CleanFile();
 	
@@ -221,6 +219,10 @@ public void OnPluginStart()
 	#endif
 	AutoExecConfig_ExecuteFile();
 	AutoExecConfig_CleanFile();
+	
+	#if (MODULE_FIXJB == 1)
+	FixJB_OnPluginStart();
+	#endif
 	
 	HookConVarChange(gH_Cvar_ChatTag, OnCvarChange_ChatTag);
 	
@@ -280,6 +282,11 @@ public void OnAllPluginsLoaded()
 	if (LibraryExists("myjailbreak"))
 	{
 		g_bMYJB = true;
+	}
+	
+	if (LibraryExists("wardenmenu"))
+	{
+		g_bBW = true;
 	}
 	
 	#if (MODULE_MUTE == 1)

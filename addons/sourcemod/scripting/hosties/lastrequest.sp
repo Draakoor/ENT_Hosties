@@ -49,6 +49,7 @@ float After_Jump_pos[MAXPLAYERS+1][3];
 float Before_Jump_pos[MAXPLAYERS+1][3];
 bool LR_Player_Jumped[MAXPLAYERS+1] = false;
 bool LR_Player_Landed[MAXPLAYERS+1] = false;
+bool BlockLR = false;
 float f_DoneDistance[MAXPLAYERS+1];
 
 bool g_bIsLRAvailable = true;
@@ -927,7 +928,7 @@ public Action LastRequest_PlayerDeath(Event event, const char[] name, bool dontB
 	
 	if (!g_bAnnouncedThisRound && gH_Cvar_LR_Enable.BoolValue)
 	{
-		if ((Ts == gH_Cvar_MaxPrisonersToLR.IntValue) && (NumCTsAvailable > 0) && (Ts > 0))
+		if ((Ts == gH_Cvar_MaxPrisonersToLR.IntValue) && (NumCTsAvailable > 0) && (Ts > 0) && !BlockLR)
 		{
 			Call_StartForward(gH_Frwd_LR_Available);
 			// announced = yes
@@ -2607,89 +2608,96 @@ public Action Command_LastRequest(int client, int args)
 {
 	if (gH_Cvar_LR_Enable.BoolValue)
 	{
-		if (g_bIsLRAvailable)
+		if (BlockLR)
 		{
-			if (!g_bInLastRequest[client])
+			if (g_bIsLRAvailable)
 			{
-				if (IsPlayerAlive(client) && (GetClientTeam(client) == CS_TEAM_T))
+				if (!g_bInLastRequest[client])
 				{
-					if (g_bIsARebel[client] && !gH_Cvar_RebelHandling.IntValue)
+					if (IsPlayerAlive(client) && (GetClientTeam(client) == CS_TEAM_T))
 					{
-						CPrintToChat(client, "%s %t", ChatBanner, "LR Rebel Not Allowed");
-					}
-					else
-					{
-						if ((g_Game == Game_CSGO && GameRules_GetProp("m_bWarmupPeriod") == 0) || g_Game == Game_CSS)
+						if (g_bIsARebel[client] && !gH_Cvar_RebelHandling.IntValue)
 						{
-							// check the number of terrorists still alive
-							int Ts, CTs, NumCTsAvailable;
-							UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);
-
-							if (Ts <= gH_Cvar_MaxPrisonersToLR.IntValue || gH_Cvar_MaxPrisonersToLR.IntValue == 0)
+							CPrintToChat(client, "%s %t", ChatBanner, "LR Rebel Not Allowed");
+						}
+						else
+						{
+							if ((g_Game == Game_CSGO && GameRules_GetProp("m_bWarmupPeriod") == 0) || g_Game == Game_CSS)
 							{
-								if (CTs > 0)
+								// check the number of terrorists still alive
+								int Ts, CTs, NumCTsAvailable;
+								UpdatePlayerCounts(Ts, CTs, NumCTsAvailable);
+
+								if (Ts <= gH_Cvar_MaxPrisonersToLR.IntValue || gH_Cvar_MaxPrisonersToLR.IntValue == 0)
 								{
-									if (NumCTsAvailable > 0)
+									if (CTs > 0)
 									{
-										if (g_Game == Game_CSGO)
+										if (NumCTsAvailable > 0)
 										{
-											ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
-											ConVar g_cvFreezeTime = FindConVar("mp_freezetime");
+											if (g_Game == Game_CSGO)
+											{
+												ConVar g_cvGraceTime = FindConVar("mp_join_grace_time");
+												ConVar g_cvFreezeTime = FindConVar("mp_freezetime");
+												
+												int RoundTime = GameRules_GetProp("m_iRoundTime");
+												int GraceTime = GetConVarInt(g_cvGraceTime);
+												int FreezeTime = GetConVarInt(g_cvFreezeTime);
+												
+												int ToCheckTime = (RoundTime - GraceTime - FreezeTime);
 											
-											int RoundTime = GameRules_GetProp("m_iRoundTime");
-											int GraceTime = GetConVarInt(g_cvGraceTime);
-											int FreezeTime = GetConVarInt(g_cvFreezeTime);
-											
-											int ToCheckTime = (RoundTime - GraceTime - FreezeTime);
-										
-											if (g_RoundTime < ToCheckTime)
+												if (g_RoundTime < ToCheckTime)
+												{
+													DisplayLastRequestMenu(client, Ts, CTs);
+												}
+												else
+												{
+													CPrintToChat(client, "%s %t", ChatBanner, "LR Grace TimeBlock");
+												}
+											}
+											else if (g_Game == Game_CSS)
 											{
 												DisplayLastRequestMenu(client, Ts, CTs);
 											}
-											else
-											{
-												CPrintToChat(client, "%s %t", ChatBanner, "LR Grace TimeBlock");
-											}
 										}
-										else if (g_Game == Game_CSS)
+										else
 										{
-											DisplayLastRequestMenu(client, Ts, CTs);
+											CPrintToChat(client, "%s %t", ChatBanner, "LR No CTs Available");
 										}
 									}
 									else
 									{
-										CPrintToChat(client, "%s %t", ChatBanner, "LR No CTs Available");
+										CPrintToChat(client, "%s %t", ChatBanner, "No CTs Alive");
 									}
 								}
 								else
 								{
-									CPrintToChat(client, "%s %t", ChatBanner, "No CTs Alive");
+									CPrintToChat(client, "%s %t", ChatBanner, "Too Many Ts");
 								}
 							}
 							else
 							{
-								CPrintToChat(client, "%s %t", ChatBanner, "Too Many Ts");
+								CPrintToChat(client, "%s %t", ChatBanner, "Blocked Warmup");
 							}
 						}
-						else
-						{
-							CPrintToChat(client, "%s %t", ChatBanner, "Blocked Warmup");
-						}
+					}
+					else
+					{
+						CPrintToChat(client, "%s %t", ChatBanner, "Not Alive Or In Wrong Team");
 					}
 				}
 				else
 				{
-					CPrintToChat(client, "%s %t", ChatBanner, "Not Alive Or In Wrong Team");
+					CPrintToChat(client, "%s %t", ChatBanner, "Another LR In Progress");
 				}
 			}
 			else
 			{
-				CPrintToChat(client, "%s %t", ChatBanner, "Another LR In Progress");
+				CPrintToChat(client, "%s %t", ChatBanner, "LR Not Available");
 			}
 		}
 		else
 		{
-			CPrintToChat(client, "%s %t", ChatBanner, "LR Not Available");
+			CPrintToChat(client, "%s %t", ChatBanner, "LR Block EventDay");
 		}
 	}
 	else
@@ -2705,6 +2713,12 @@ public Action Timer_RoundTimeLeft(Handle timer, int RoundTime)
 	if (g_RoundTime != 0)
 	{
 		g_RoundTime = g_RoundTime - 1;
+		
+		if (g_bBW)
+			BlockLR = (IsEventDayActive()) ? true : false;
+		
+		if (g_bMYJB)
+			BlockLR = (MyJailbreak_IsEventDayRunning()) ? true : false;
 	}
 	else
 		return Plugin_Stop;

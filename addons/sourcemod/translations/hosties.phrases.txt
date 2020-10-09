@@ -699,4 +699,8 @@
 	{
 		"en"		"Your opponent threw the weapon. You have 10 seconds to do it."
 	}
+	"LR Block EventDay"
+	{
+		"en"		"LastRequest is currently blocked due to an EventDay."
+	}
 }

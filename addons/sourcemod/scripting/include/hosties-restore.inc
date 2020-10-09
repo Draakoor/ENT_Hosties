@@ -1,13 +1,10 @@
 /*
- * SourceMod Hosties Project
+ * SourceMod Entity Projects
  * by: SourceMod Hosties Dev Team
  *
- * This file is part of the SM Hosties project.
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) 
- * any later version.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, version 3.0, as published by the
+ * Free Software Foundation.
  * 
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -17,7 +14,6 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
 #if defined _HostiesRestore_Included_
 	#endinput
 #endif
@@ -86,35 +82,18 @@ stock void RestoreWeapons(int aimed)
 {
 	if (IsValidClient(aimed))
 	{
-		int weapon;
-		while((weapon = GetPlayerWeaponSlot(aimed, CS_SLOT_KNIFE)) != -1)
-		{
-			if (Weapon_IsValid(weapon))
-			{
-				RemovePlayerItem(aimed, weapon);
-				AcceptEntityInput(weapon, "Kill");
-			}
-		}
-	
 		for (int g = 0; g <= C_WeaponCount[aimed]; g++)
 		{
-			if (StrEqual(C_sWeapon[aimed][g], "weapon_flashbang"))
+			if (!StrEqual(C_sWeapon[aimed][g], "weapon_flashbang"))
 			{
-				for (int x = 1; x <= C_FlashCounter[aimed]; x++)
-				{
-					GivePlayerItem(aimed, C_sWeapon[aimed][g]);
-				}
+				GivePlayerItem(aimed, C_sWeapon[aimed][g]);
 			}
 			else
 			{
-				int wep = GivePlayerItem(aimed, C_sWeapon[aimed][g]);
-				if (Weapon_IsValid(wep))
+				for (int x = 1; x <= C_FlashCounter[aimed]; x++)
 				{
-					int Check = Client_GetWeaponPlayerAmmo(aimed, C_sWeapon[aimed][g]);
-					if (Check == 0)
-					{
-						EquipPlayerWeapon(aimed, wep);
-					}
+
+					GivePlayerItem(aimed, C_sWeapon[aimed][g]);
 				}
 			}
 		}
@@ -132,14 +111,19 @@ stock void SetWeaponClassname(int weapon, char[] buffer, int size)
 { 
 	if (Weapon_IsValid(weapon))
 	{
-		switch (GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")) 
-		{ 
-			case 23: Format(buffer, size, "weapon_mp5sd"); 
-			case 60: Format(buffer, size, "weapon_m4a1_silencer"); 
-			case 61: Format(buffer, size, "weapon_usp_silencer"); 
-			case 63: Format(buffer, size, "weapon_cz75a"); 
-			case 64: Format(buffer, size, "weapon_revolver"); 
-			default: GetEntityClassname(weapon, buffer, size); 
+		if (g_Game == Game_CSGO)
+		{
+			switch (GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")) 
+			{ 
+					case 23: Format(buffer, size, "weapon_mp5sd"); 
+					case 60: Format(buffer, size, "weapon_m4a1_silencer"); 
+					case 61: Format(buffer, size, "weapon_usp_silencer"); 
+					case 63: Format(buffer, size, "weapon_cz75a"); 
+					case 64: Format(buffer, size, "weapon_revolver"); 
+					default: GetEntityClassname(weapon, buffer, size); 
+			}
 		}
+		else if (g_Game == Game_CSS)
+			GetEntityClassname(weapon, buffer, size); 
 	}
 }

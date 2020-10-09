@@ -4,10 +4,9 @@
  *
  * This file is part of the SM Hosties project.
  *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) 
- * any later version.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, version 3.0, as published by the
+ * Free Software Foundation.
  * 
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -123,6 +122,38 @@ stock void MutePlayer(int client)
 stock void UnmutePlayer(int client)
 {
 	SetClientListeningFlags(client, VOICE_NORMAL);
+}
+
+stock void GetFlagInt(char buffer[30])
+{
+	FlagStringToInt(buffer, "a", ADMFLAG_RESERVATION);
+	FlagStringToInt(buffer, "b", ADMFLAG_GENERIC);
+	FlagStringToInt(buffer, "c", ADMFLAG_KICK);
+	FlagStringToInt(buffer, "d", ADMFLAG_BAN);
+	FlagStringToInt(buffer, "e", ADMFLAG_UNBAN);
+	FlagStringToInt(buffer, "f", ADMFLAG_SLAY);
+	FlagStringToInt(buffer, "g", ADMFLAG_CHANGEMAP);
+	FlagStringToInt(buffer, "h", ADMFLAG_CONVARS);
+	FlagStringToInt(buffer, "i", ADMFLAG_CONFIG);
+	FlagStringToInt(buffer, "j", ADMFLAG_CHAT);
+	FlagStringToInt(buffer, "k", ADMFLAG_VOTE);
+	FlagStringToInt(buffer, "l", ADMFLAG_PASSWORD);
+	FlagStringToInt(buffer, "m", ADMFLAG_RCON);
+	FlagStringToInt(buffer, "n", ADMFLAG_CHEATS);
+	FlagStringToInt(buffer, "z", ADMFLAG_ROOT);
+	FlagStringToInt(buffer, "o", ADMFLAG_CUSTOM1);
+	FlagStringToInt(buffer, "p", ADMFLAG_CUSTOM2);
+	FlagStringToInt(buffer, "q", ADMFLAG_CUSTOM3);
+	FlagStringToInt(buffer, "r", ADMFLAG_CUSTOM4);
+	FlagStringToInt(buffer, "s", ADMFLAG_CUSTOM5);
+	FlagStringToInt(buffer, "t", ADMFLAG_CUSTOM6);
+}
+
+stock void FlagStringToInt(char StrToReplace[30], char flag[10], int ReplaceWith)
+{
+	char NewFlagValue[10];
+	IntToString(ReplaceWith, NewFlagValue, sizeof(NewFlagValue));
+	ReplaceString(StrToReplace, sizeof(StrToReplace), flag, NewFlagValue, false);
 }
 
 stock void CacheTheFile(const char[] path, MediaType filetype)
