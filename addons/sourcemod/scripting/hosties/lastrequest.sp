@@ -2608,7 +2608,7 @@ public Action Command_LastRequest(int client, int args)
 {
 	if (gH_Cvar_LR_Enable.BoolValue)
 	{
-		if (BlockLR)
+		if (!BlockLR)
 		{
 			if (g_bIsLRAvailable)
 			{
